@@ -1,0 +1,938 @@
+/* ============================================================
+   SILVERLINE RESORT — Design tokens
+   Palette derived from the Nilgiri drone footage: dawn mist over
+   tea-terraced ridgelines. Deep forest greens in shadow, stone
+   grey mist in the midground, ivory sky, warm teak accents.
+   ============================================================ */
+
+:root {
+  /* --- Core surfaces (darkest → lightest) --- */
+  --charcoal: #14181a;
+  --charcoal-deep: #0d1012;
+  --forest-deep: #16241f;
+  --forest: #1f3730;
+  --pine: #2c4a3f;
+  --pine-soft: #3d5f52;
+  --moss: #55705f;
+
+  /* --- Mist & neutrals --- */
+  --stone: #7d8a86;
+  --stone-light: #a8b2ae;
+  --fog: #d7dcd8;
+  --ivory: #eceae3;
+  --ivory-warm: #f5f2ea;
+
+  /* --- Warmth / accent --- */
+  --teak: #9a7a52;
+  --teak-light: #c0a077;
+  --brass: #b8a179;
+  --amber-glow: #d9b483;
+
+  /* --- Typography --- */
+  --font-display: "Cormorant Garamond", "Times New Roman", serif;
+  --font-body: "Jost", "Helvetica Neue", sans-serif;
+
+  /* --- Motion: slow, cinematic, matched to drone drift --- */
+  --ease-silk: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-drift: cubic-bezier(0.65, 0.05, 0.36, 1);
+  --dur-slow: 1.5s;
+  --dur-mid: 0.9s;
+  --dur-fast: 0.45s;
+
+  /* --- Glass --- */
+  --glass-bg: rgba(28, 38, 35, 0.42);
+  --glass-bg-light: rgba(236, 234, 227, 0.07);
+  --glass-border: rgba(215, 220, 216, 0.14);
+  --glass-blur: blur(22px) saturate(1.15);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--charcoal-deep);
+  color: var(--ivory);
+  font-family: var(--font-body);
+  font-weight: 300;
+  letter-spacing: 0.015em;
+  overflow-x: hidden;
+}
+
+/* Lenis */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+::selection {
+  background: var(--teak);
+  color: var(--ivory-warm);
+}
+
+/* ============================================================
+   TYPOGRAPHY PRIMITIVES
+   ============================================================ */
+
+.font-display { font-family: var(--font-display); }
+.font-body { font-family: var(--font-body); }
+
+.display-xl {
+  font-family: var(--font-display);
+  font-weight: 300;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--stone-light);
+}
+
+.lede {
+  font-weight: 300;
+  line-height: 1.85;
+  color: rgba(236, 234, 227, 0.66);
+}
+
+/* Hairline divider that draws itself in */
+.hairline {
+  height: 1px;
+  background: linear-gradient(90deg, var(--teak), rgba(154, 122, 82, 0));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.6s var(--ease-silk);
+}
+.is-inview .hairline { transform: scaleX(1); }
+
+/* ============================================================
+   REVEAL SYSTEM — driven by IntersectionObserver
+   ============================================================ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(34px);
+  transition:
+    opacity 1.5s var(--ease-silk),
+    transform 1.5s var(--ease-silk);
+  will-change: opacity, transform;
+}
+.reveal.is-inview { opacity: 1; transform: none; }
+
+.reveal-blur {
+  opacity: 0;
+  filter: blur(14px);
+  transform: translateY(24px) scale(1.015);
+  transition:
+    opacity 1.7s var(--ease-silk),
+    filter 1.7s var(--ease-silk),
+    transform 1.7s var(--ease-silk);
+}
+.reveal-blur.is-inview { opacity: 1; filter: blur(0); transform: none; }
+
+/* Line-by-line masked text reveal */
+.line-mask { overflow: hidden; display: block; }
+.line-mask > span {
+  display: block;
+  transform: translateY(105%);
+  transition: transform 1.5s var(--ease-silk);
+}
+.is-inview .line-mask > span { transform: none; }
+
+/* Image scale-out reveal (Aman-style calm push) */
+.img-reveal { overflow: hidden; }
+.img-reveal img {
+  transform: scale(1.16);
+  transition: transform 2.2s var(--ease-silk);
+  will-change: transform;
+}
+.is-inview.img-reveal img,
+.is-inview .img-reveal img { transform: scale(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal-blur, .line-mask > span, .img-reveal img, .hairline {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ============================================================
+   GLASS SURFACES
+   ============================================================ */
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-light {
+  background: var(--glass-bg-light);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+}
+
+/* Moving sheen across a glass panel */
+.glass-sheen { position: relative; overflow: hidden; }
+.glass-sheen::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -60%;
+  width: 45%; height: 100%;
+  background: linear-gradient(
+    100deg,
+    rgba(236,234,227,0) 0%,
+    rgba(236,234,227,0.09) 48%,
+    rgba(236,234,227,0) 100%
+  );
+  transform: skewX(-16deg);
+  transition: left 1.15s var(--ease-silk);
+  pointer-events: none;
+}
+.glass-sheen:hover::after { left: 118%; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  padding: 1.05rem 2.4rem;
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  overflow: hidden;
+  isolation: isolate;
+  transition: color var(--dur-fast) var(--ease-silk),
+              border-color var(--dur-fast) var(--ease-silk),
+              transform 0.7s var(--ease-silk);
+  will-change: transform;
+}
+
+/* Wipe fill that rises from the bottom */
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: translateY(101%);
+  transition: transform 0.62s var(--ease-silk);
+}
+.btn:hover::before { transform: translateY(0); }
+
+.btn-primary {
+  background: var(--ivory);
+  color: var(--charcoal);
+  border: 1px solid var(--ivory);
+}
+.btn-primary::before { background: var(--teak); }
+.btn-primary:hover { color: var(--ivory-warm); border-color: var(--teak); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ivory);
+  border: 1px solid rgba(236, 234, 227, 0.34);
+}
+.btn-ghost::before { background: var(--ivory); }
+.btn-ghost:hover { color: var(--charcoal); border-color: var(--ivory); }
+
+.btn-dark {
+  background: transparent;
+  color: var(--forest-deep);
+  border: 1px solid rgba(31, 55, 48, 0.28);
+}
+.btn-dark::before { background: var(--forest); }
+.btn-dark:hover { color: var(--ivory); border-color: var(--forest); }
+
+/* Ripple element injected by JS */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  background: rgba(236, 234, 227, 0.32);
+  animation: ripple-out 0.75s var(--ease-silk) forwards;
+  pointer-events: none;
+  z-index: -1;
+}
+.btn-primary .ripple { background: rgba(20, 24, 26, 0.16); }
+
+@keyframes ripple-out {
+  to { transform: scale(2.6); opacity: 0; }
+}
+
+/* ============================================================
+   LINK UNDERLINE
+   ============================================================ */
+
+.link-line {
+  position: relative;
+  display: inline-block;
+}
+.link-line::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: -3px;
+  width: 100%; height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.6s var(--ease-silk);
+}
+.link-line:hover::after { transform: scaleX(1); transform-origin: left; }
+
+/* ============================================================
+   3D TILT CARDS
+   ============================================================ */
+
+.tilt-scene { perspective: 1100px; }
+.tilt-card {
+  transform-style: preserve-3d;
+  transition: transform 0.85s var(--ease-silk),
+              box-shadow 0.85s var(--ease-silk);
+  will-change: transform;
+}
+.tilt-card > * { transform-style: preserve-3d; }
+.tilt-lift { transform: translateZ(38px); }
+
+/* Animated gradient border on hover */
+.edge-glow { position: relative; }
+.edge-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    150deg,
+    rgba(184,161,121,0.55),
+    rgba(215,220,216,0.10) 38%,
+    rgba(184,161,121,0) 65%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.8s var(--ease-silk);
+  pointer-events: none;
+}
+.edge-glow:hover::before { opacity: 1; }
+
+/* ============================================================
+   CURSOR GLOW (desktop pointer only)
+   ============================================================ */
+
+#cursor-glow {
+  position: fixed;
+  top: 0; left: 0;
+  width: 380px; height: 380px;
+  margin: -190px 0 0 -190px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0;
+  background: radial-gradient(
+    circle,
+    rgba(184, 161, 121, 0.11) 0%,
+    rgba(184, 161, 121, 0.045) 38%,
+    rgba(184, 161, 121, 0) 72%
+  );
+  transition: opacity 0.7s var(--ease-silk);
+  will-change: transform;
+}
+#cursor-dot {
+  position: fixed;
+  top: 0; left: 0;
+  width: 6px; height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--ivory);
+  pointer-events: none;
+  z-index: 61;
+  opacity: 0;
+  mix-blend-mode: difference;
+  transition: opacity 0.5s var(--ease-silk),
+              width 0.45s var(--ease-silk),
+              height 0.45s var(--ease-silk),
+              margin 0.45s var(--ease-silk);
+  will-change: transform;
+}
+body.cursor-active #cursor-glow,
+body.cursor-active #cursor-dot { opacity: 1; }
+body.cursor-hover #cursor-dot {
+  width: 46px; height: 46px;
+  margin: -23px 0 0 -23px;
+  background: rgba(236, 234, 227, 0.24);
+}
+
+@media (hover: none), (pointer: coarse) {
+  #cursor-glow, #cursor-dot { display: none; }
+}
+
+/* ============================================================
+   SCROLL INDICATOR
+   ============================================================ */
+
+.scroll-track {
+  width: 1px;
+  height: 62px;
+  background: rgba(236, 234, 227, 0.16);
+  position: relative;
+  overflow: hidden;
+}
+.scroll-track::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 40%;
+  background: linear-gradient(180deg, rgba(236,234,227,0), var(--ivory));
+  animation: scroll-fall 2.6s var(--ease-drift) infinite;
+}
+@keyframes scroll-fall {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  22%  { opacity: 1; }
+  78%  { opacity: 1; }
+  100% { transform: translateY(250%); opacity: 0; }
+}
+
+.mouse-shape {
+  width: 22px; height: 34px;
+  border: 1px solid rgba(236, 234, 227, 0.4);
+  border-radius: 999px;
+  position: relative;
+}
+.mouse-shape::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: 7px;
+  width: 2px; height: 6px;
+  margin-left: -1px;
+  border-radius: 2px;
+  background: var(--ivory);
+  animation: mouse-wheel 2.1s var(--ease-drift) infinite;
+}
+@keyframes mouse-wheel {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  55%      { transform: translateY(11px); opacity: 0.15; }
+}
+
+/* ============================================================
+   AMENITY ICON MOTION
+   ============================================================ */
+
+.amenity-item svg { overflow: visible; }
+.amenity-item .ico-stroke {
+  stroke-dasharray: var(--len, 220);
+  stroke-dashoffset: var(--len, 220);
+  transition: stroke-dashoffset 1.9s var(--ease-silk);
+}
+.amenity-item.is-inview .ico-stroke { stroke-dashoffset: 0; }
+.amenity-ring {
+  transition: transform 1s var(--ease-silk), border-color 1s var(--ease-silk);
+}
+.amenity-item:hover .amenity-ring {
+  transform: scale(1.07) rotate(45deg);
+  border-color: rgba(184, 161, 121, 0.6);
+}
+.amenity-item:hover .amenity-ring svg { transform: rotate(-45deg); }
+.amenity-ring svg { transition: transform 1s var(--ease-silk); }
+
+/* ============================================================
+   GALLERY
+   ============================================================ */
+
+.gal-item { overflow: hidden; position: relative; }
+.gal-item img {
+  transition: transform 1.5s var(--ease-silk), filter 1.5s var(--ease-silk);
+  will-change: transform;
+}
+.gal-item:hover img { transform: scale(1.07); filter: brightness(1.06); }
+.gal-item::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(13,16,18,0) 45%, rgba(13,16,18,0.72));
+  opacity: 0;
+  transition: opacity 1s var(--ease-silk);
+  pointer-events: none;
+}
+.gal-item:hover::after { opacity: 1; }
+.gal-cap {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.9s var(--ease-silk), transform 0.9s var(--ease-silk);
+}
+.gal-item:hover .gal-cap { opacity: 1; transform: none; }
+
+/* Lightbox */
+#lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(9, 11, 12, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.7s var(--ease-silk), visibility 0.7s;
+}
+#lightbox.is-open { opacity: 1; visibility: visible; }
+#lightbox .lb-media {
+  max-width: 90vw;
+  max-height: 82vh;
+  transform: scale(0.94);
+  opacity: 0;
+  transition: transform 0.9s var(--ease-silk), opacity 0.9s var(--ease-silk);
+}
+#lightbox.is-open .lb-media { transform: none; opacity: 1; }
+
+/* ============================================================
+   ATTRACTION CARDS
+   ============================================================ */
+
+.attr-card { position: relative; overflow: hidden; }
+.attr-card img {
+  transition: transform 1.6s var(--ease-silk);
+  will-change: transform;
+}
+.attr-card:hover img { transform: scale(1.08); }
+.attr-veil {
+  background: linear-gradient(
+    180deg,
+    rgba(13,16,18,0.06) 0%,
+    rgba(13,16,18,0.5) 52%,
+    rgba(13,16,18,0.93) 100%
+  );
+}
+.attr-detail {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 1.05s var(--ease-silk), opacity 0.8s var(--ease-silk);
+}
+.attr-card:hover .attr-detail,
+.attr-card:focus-within .attr-detail { max-height: 190px; opacity: 1; }
+
+/* Imageless attraction plate — for nearby landmarks we hold no photography
+   of. Deep forest/stone gradient with a fine ruled grain and a faint contour
+   mark, so these cards still read as premium surfaces beside the real photos. */
+.attr-plate {
+  background:
+    radial-gradient(ellipse 90% 70% at 22% 12%, rgba(44,74,63,0.55), transparent 62%),
+    radial-gradient(ellipse 80% 65% at 84% 88%, rgba(31,55,48,0.50), transparent 66%),
+    linear-gradient(168deg, #1a2a24 0%, #14201c 48%, #0f1517 100%);
+  border: 1px solid rgba(215, 220, 216, 0.09);
+  transition: border-color 1s var(--ease-silk), transform 1.2s var(--ease-silk);
+}
+.attr-plate::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    180deg,
+    rgba(215, 220, 216, 0.045) 0px,
+    rgba(215, 220, 216, 0.045) 1px,
+    transparent 1px,
+    transparent 9px
+  );
+  opacity: 0.5;
+  transition: opacity 1.2s var(--ease-silk);
+  pointer-events: none;
+}
+.attr-plate:hover::before,
+.attr-plate:focus-within::before { opacity: 0.85; }
+.attr-plate:hover,
+.attr-plate:focus-within {
+  border-color: rgba(192, 160, 119, 0.30);
+  transform: translateY(-4px);
+}
+.attr-plate::after {
+  content: "";
+  position: absolute;
+  right: -12%;
+  bottom: -18%;
+  width: 78%;
+  height: 78%;
+  background-image:
+    radial-gradient(circle at 50% 50%, transparent 38%, rgba(192,160,119,0.09) 38.6%, transparent 40%),
+    radial-gradient(circle at 50% 50%, transparent 52%, rgba(192,160,119,0.07) 52.6%, transparent 54%),
+    radial-gradient(circle at 50% 50%, transparent 66%, rgba(192,160,119,0.05) 66.6%, transparent 68%);
+  transition: transform 1.6s var(--ease-silk);
+  pointer-events: none;
+}
+.attr-plate:hover::after { transform: scale(1.06) rotate(2deg); }
+.attr-plate .attr-veil {
+  background: linear-gradient(180deg, transparent 40%, rgba(13,16,18,0.50) 100%);
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+#site-header {
+  transition: background-color 0.9s var(--ease-silk),
+              backdrop-filter 0.9s var(--ease-silk),
+              border-color 0.9s var(--ease-silk),
+              padding 0.9s var(--ease-silk);
+  border-bottom: 1px solid transparent;
+}
+#site-header.is-stuck {
+  background: rgba(13, 16, 18, 0.72);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border-bottom-color: rgba(215, 220, 216, 0.09);
+}
+
+/* Mobile drawer */
+#nav-drawer {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 1s var(--ease-silk);
+}
+#nav-drawer.is-open { clip-path: inset(0 0 0 0); }
+#nav-drawer a {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s var(--ease-silk), transform 0.8s var(--ease-silk);
+}
+#nav-drawer.is-open a { opacity: 1; transform: none; }
+
+/* ============================================================
+   PRELOADER
+   ============================================================ */
+
+#preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--charcoal-deep);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 1.4s var(--ease-silk), visibility 1.4s;
+}
+#preloader.is-done { opacity: 0; visibility: hidden; }
+.pl-bar {
+  width: min(210px, 46vw);
+  height: 1px;
+  background: rgba(236, 234, 227, 0.14);
+  overflow: hidden;
+}
+.pl-bar span {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--teak), var(--ivory));
+  transition: width 0.5s var(--ease-silk);
+}
+.pl-mark {
+  animation: pl-breathe 3s var(--ease-drift) infinite;
+}
+@keyframes pl-breathe {
+  0%, 100% { opacity: 0.42; letter-spacing: 0.5em; }
+  50%      { opacity: 1; letter-spacing: 0.58em; }
+}
+
+/* ============================================================
+   MISC
+   ============================================================ */
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(13,16,18,0) 42%,
+    rgba(13,16,18,0.45) 100%
+  );
+}
+
+.num-mark {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  color: var(--teak-light);
+}
+
+/* Progress rail */
+#scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  width: 100%;
+  transform-origin: left;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, var(--pine), var(--teak-light));
+  z-index: 70;
+}
+
+/* Keep tap targets comfortable */
+@media (max-width: 640px) {
+  .btn { padding: 0.95rem 1.7rem; }
+}
+
+/* Keyboard focus ring — accessibility */
+:focus-visible {
+  outline: 2px solid var(--teak-light);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+.btn:focus-visible {
+  outline-offset: 4px;
+  border-radius: 999px;
+}
+
+/* Flip card back overlay — tighter padding on small phones */
+@media (max-width: 480px) {
+  .attr-back-overlay { padding: 1.25rem; }
+  .attr-back-name { font-size: 1.4rem; }
+  .attr-back-desc { font-size: 0.8rem; line-height: 1.7; }
+}
+
+/* ============================================================
+   FLIP CARD — 3D premium interaction for attraction cards
+   The article itself stays unchanged in size / position / hover.
+   We add an inner flip element that rotates on .is-flipped.
+   ============================================================ */
+
+/* Give the article a perspective context for depth */
+.attr-card { perspective: 1400px; }
+
+/* The rotating inner — wraps front + back faces */
+.attr-flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+/* Each face: absolutely fills the inner */
+.attr-face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+/* Front stays at 0° rotation (visible by default) */
+.attr-face-front {
+  transform: rotateY(0deg);
+}
+
+/* Back starts flipped 180° (hidden by default) */
+.attr-face-back {
+  transform: rotateY(180deg);
+  background: var(--charcoal-deep);
+}
+
+/* The photo fills the back face elegantly */
+.attr-face-back img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  /* Images are pre-graded cinematically — apply only a whisper of
+     atmosphere so they breathe with the site without double-darkening */
+  filter: brightness(0.93) saturate(0.94) contrast(1.02);
+  transition: transform 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Very gentle zoom on back-face hover */
+.attr-card.is-flipped .attr-face-back img {
+  transform: scale(1.04);
+}
+.attr-card.is-flipped:hover .attr-face-back img {
+  transform: scale(1.07);
+}
+
+/* Back overlay — cinematic gradient + text
+   Pulled to the bottom third so the photograph dominates the upper area */
+.attr-back-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1.75rem;
+  background: linear-gradient(
+    180deg,
+    rgba(13,16,18,0.00) 0%,
+    rgba(13,16,18,0.10) 38%,
+    rgba(13,16,18,0.76) 70%,
+    rgba(13,16,18,0.92) 100%
+  );
+}
+
+.attr-back-name {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 300;
+  line-height: 1.1;
+  color: var(--ivory-warm);
+  margin-bottom: 0.55rem;
+}
+
+.attr-back-desc {
+  font-weight: 300;
+  font-size: 0.85rem;
+  line-height: 1.8;
+  color: rgba(236,234,227,0.78);
+  margin-bottom: 0.9rem;
+}
+
+.attr-back-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--teak-light);
+  margin-bottom: 0.8rem;
+}
+
+.attr-back-meta span {
+  display: block;
+  width: 1px;
+  height: 10px;
+  background: rgba(192,160,119,0.4);
+}
+
+.attr-back-hint {
+  font-size: 0.56rem;
+  font-weight: 300;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(236,234,227,0.3);
+  margin-top: 0.2rem;
+}
+
+/* When flipped, rotate the inner 180° to reveal back */
+.attr-card.is-flipped .attr-flip-inner {
+  transform: rotateY(180deg);
+}
+
+/* While flipped, suppress the hover translateY lift and border-color change
+   on the outer plate so the flip stays clean */
+.attr-card.is-flipped.attr-plate {
+  transform: none;
+  border-color: rgba(215, 220, 216, 0.09);
+  pointer-events: auto;
+}
+
+/* Also suppress the contour-circle rotation on back */
+.attr-card.is-flipped.attr-plate:hover::after {
+  transform: none;
+}
+.attr-card.is-flipped.attr-plate::before {
+  opacity: 0.5;
+}
+
+/* ============================================================
+   GLASS GLARE SWEEP — triggered by JS class .is-glaring
+   A single absolutely-positioned div above the flip inner.
+   Lives outside the flip inner so it always faces the viewer.
+   ============================================================ */
+
+.attr-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 12;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.attr-glare::after {
+  content: "";
+  position: absolute;
+  top: -10%;
+  left: -130%;
+  width: 60%;
+  height: 120%;
+  background: linear-gradient(
+    105deg,
+    rgba(236,234,227,0) 0%,
+    rgba(236,234,227,0.11) 45%,
+    rgba(236,234,227,0.07) 55%,
+    rgba(236,234,227,0) 100%
+  );
+  transform: skewX(-12deg);
+  opacity: 0;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+@keyframes glare-sweep {
+  0%   { transform: skewX(-12deg) translateX(0);      opacity: 0; }
+  8%   { opacity: 1; }
+  90%  { opacity: 0.85; }
+  100% { transform: skewX(-12deg) translateX(360%);   opacity: 0; }
+}
+
+.attr-card.is-glaring .attr-glare::after {
+  animation: glare-sweep 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ============================================================
+   DAY / NIGHT ATMOSPHERE OVERLAY
+   A fixed div below the grain (z-index 54) that applies an
+   imperceptibly subtle tint based on visitor's local time.
+   Transition is very slow so no live-change is ever noticed.
+   ============================================================ */
+
+#day-night-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 54;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  /* Initial state is transparent — JS sets the colour */
+  background-color: transparent;
+  /* Slow transition so any phase change during a session
+     takes 120 s to complete — completely imperceptible */
+  transition: background-color 120s linear;
+}
+

@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Silverline Resort, Ooty — Experience Serenity in the Heart of the Nilgiris</title>
+<meta name="description" content="Silverline Resort, Ooty. A quiet luxury retreat in the Nilgiri hills — cinematic mountain views, seven room categories, breakfast included. Balacola, Ooty, Tamil Nadu.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&amp;family=Jost:wght@200;300;400&amp;display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="/css/theme.css">
+
+<link rel="stylesheet" href="https://cdn.moda.app/runtime-libs/lenis-1.3.23/lenis.css">
+<script src="https://cdn.moda.app/runtime-libs/tailwind-browser-4.1.13-index.global.min.js"></script></head>
+
+<body class="antialiased">
+
+<!-- ══════════════════════════════════════════════════════════
+     PRELOADER
+     ══════════════════════════════════════════════════════════ -->
+<div id="preloader">
+  <div class="text-center px-6">
+    <p class="pl-mark font-display text-[0.8rem] sm:text-[0.9rem] uppercase" style="letter-spacing:0.5em; color:var(--ivory)">Silverline</p>
+    <p class="mt-3 mb-9 text-[0.56rem] uppercase" style="letter-spacing:0.34em; color:var(--stone)">Ooty · Nilgiris</p>
+    <div class="pl-bar mx-auto"><span id="pl-fill"></span></div>
+    <p id="pl-pct" class="mt-4 text-[0.56rem] tabular-nums" style="letter-spacing:0.3em; color:var(--stone)">00</p>
+  </div>
+</div>
+
+<div class="grain" aria-hidden="true"></div>
+<div id="day-night-overlay" aria-hidden="true"></div>
+<div id="scroll-progress" aria-hidden="true"></div>
+<div id="cursor-glow" aria-hidden="true"></div>
+<div id="cursor-dot" aria-hidden="true"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     HEADER
+     ══════════════════════════════════════════════════════════ -->
+<header id="site-header" class="fixed top-0 left-0 w-full z-50 py-5 md:py-7">
+  <div class="mx-auto max-w-[1560px] px-6 md:px-10 flex items-center justify-between">
+
+    <a href="#hero" class="flex items-center gap-3 group" data-cursor="hover">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="shrink-0 transition-transform duration-700" style="transition-timing-function:var(--ease-silk)">
+        <path d="M2 17.5L8.2 8l4.1 5.6L15.6 9l6.4 8.5H2z" stroke="var(--teak-light)" stroke-width="0.9" stroke-linejoin="round" fill="none"></path>
+        <circle cx="17.4" cy="5.6" r="2.1" stroke="var(--ivory)" stroke-width="0.9" fill="none" opacity="0.75"></circle>
+      </svg>
+      <span class="font-display text-[0.95rem] md:text-[1.05rem] leading-none" style="letter-spacing:0.26em; color:var(--ivory)">SILVERLINE</span>
+    </a>
+
+    <nav class="hidden lg:flex items-center gap-9 text-[0.66rem] uppercase" style="letter-spacing:0.22em; color:rgba(236,234,227,0.72)">
+      <a href="#welcome" class="link-line hover:text-white transition-colors duration-500" data-cursor="hover">Welcome</a>
+      <a href="#nature" class="link-line hover:text-white transition-colors duration-500" data-cursor="hover">Nature</a>
+      <a href="#rooms" class="link-line hover:text-white transition-colors duration-500" data-cursor="hover">Rooms</a>
+      <a href="#amenities" class="link-line hover:text-white transition-colors duration-500" data-cursor="hover">Amenities</a>
+      <a href="#gallery" class="link-line hover:text-white transition-colors duration-500" data-cursor="hover">Gallery</a>
+      <a href="#attractions" class="link-line hover:text-white transition-colors duration-500" data-cursor="hover">Nearby</a>
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <a href="tel:+918638479919" class="hidden md:inline-flex items-center gap-2 text-[0.66rem] uppercase transition-colors duration-500 hover:text-white" style="letter-spacing:0.2em; color:rgba(236,234,227,0.72)" data-cursor="hover">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.3-1.2a2 2 0 012.1-.5c.9.3 1.8.6 2.8.7a2 2 0 011.7 2z"></path>
+        </svg>
+        +91 86384 79919
+      </a>
+      <a href="#booking" class="btn btn-ghost hidden sm:inline-flex !py-3 !px-6" data-cursor="hover" data-ripple="">Book Your Stay</a>
+
+      <button id="nav-toggle" class="lg:hidden w-10 h-10 flex flex-col items-center justify-center gap-[5px]" aria-label="Open menu" aria-expanded="false">
+        <span class="block w-5 h-px transition-all duration-500" style="background:var(--ivory)"></span>
+        <span class="block w-5 h-px transition-all duration-500" style="background:var(--ivory)"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile drawer -->
+<div id="nav-drawer" class="fixed inset-0 z-40 lg:hidden flex flex-col items-center justify-center gap-1" style="background:rgba(13,16,18,0.97); backdrop-filter:blur(24px)">
+  <a href="#welcome" class="font-display text-3xl py-3" style="color:var(--ivory); transition-delay:0.1s">Welcome</a>
+  <a href="#nature" class="font-display text-3xl py-3" style="color:var(--ivory); transition-delay:0.16s">Nature</a>
+  <a href="#rooms" class="font-display text-3xl py-3" style="color:var(--ivory); transition-delay:0.22s">Rooms</a>
+  <a href="#amenities" class="font-display text-3xl py-3" style="color:var(--ivory); transition-delay:0.28s">Amenities</a>
+  <a href="#gallery" class="font-display text-3xl py-3" style="color:var(--ivory); transition-delay:0.34s">Gallery</a>
+  <a href="#attractions" class="font-display text-3xl py-3" style="color:var(--ivory); transition-delay:0.40s">Nearby</a>
+  <a href="#booking" class="font-display text-3xl py-3" style="color:var(--teak-light); transition-delay:0.46s">Book Your Stay</a>
+</div>
+
+<main>
+
+<!-- ══════════════════════════════════════════════════════════
+     01 · HERO
+     ══════════════════════════════════════════════════════════ -->
+<section id="hero" class="relative min-h-[100svh] w-full overflow-hidden flex items-center justify-center">
+
+  <!-- Cinematic backplate — real aerial of Silverline Resort, Balacola.
+       ► TO SWAP IN YOUR DRONE VIDEO when you send the .mp4:
+         replace the <img> below with:
+         <video class="absolute inset-0 w-full h-full object-cover" autoplay muted loop playsinline
+                preload="metadata" poster="https://api.moda.app/api/v2/images/ref/780dc84d-887e-4f96-a14c-2b97e7646540?v=053782ec0b4473cd&s=663c33dffd8ed11a19e2e47e1788dfb2">
+           <source src="YOUR-DRONE.mp4" type="video/mp4">
+         </video>
+       Everything else in this section (atmosphere canvas, grading layers, copy) stays as-is. -->
+  <div id="hero-media" class="absolute inset-0 will-change-transform" style="transform:scale(1.08)">
+    <img src="../images/780dc84d-887e-4f96-a14c-2b97e7646540.png" alt="Aerial view of Silverline Resort set among the tea slopes of Balacola, Ooty" fetchpriority="high" class="absolute inset-0 w-full h-full object-cover" style="object-position:center 42%">
+  </div>
+
+  <!-- Grading layers to seat the UI inside the footage -->
+  <div class="absolute inset-0" style="background:linear-gradient(180deg, rgba(13,16,18,0.62) 0%, rgba(13,16,18,0.16) 34%, rgba(13,16,18,0.30) 62%, rgba(13,16,18,0.90) 100%)"></div>
+  <div class="absolute inset-0" style="background:linear-gradient(90deg, rgba(22,36,31,0.42) 0%, rgba(22,36,31,0) 52%)"></div>
+  <div class="vignette"></div>
+
+  <!-- WebGL atmosphere: fog, drifting particles, light rays -->
+  <canvas id="atmos-canvas" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
+
+  <!-- Hero copy -->
+  <div id="hero-copy" class="relative z-10 w-full max-w-[1560px] px-6 md:px-10 pt-24 pb-32 text-center">
+
+    <p class="eyebrow mb-7 hero-in" style="color:rgba(236,234,227,0.68)">Nilgiri Hills · Tamil Nadu · Est. Serenity</p>
+
+    <h1 class="display-xl hero-in mx-auto" style="font-size:clamp(2.9rem, 9.2vw, 8.6rem); letter-spacing:0.06em; color:var(--ivory-warm); text-shadow:0 12px 60px rgba(13,16,18,0.5)">
+      SILVERLINE
+      <span class="block mt-1 md:mt-2" style="font-size:0.44em; letter-spacing:0.34em; color:rgba(236,234,227,0.86)">RESORT</span>
+    </h1>
+
+    <div class="hero-in mt-9 mb-11 flex items-center justify-center gap-5">
+      <span class="block h-px w-12 md:w-20" style="background:linear-gradient(90deg, transparent, var(--teak-light))"></span>
+      <p class="font-display italic text-[1.05rem] md:text-[1.6rem] leading-snug px-1" style="color:rgba(236,234,227,0.92)">Experience Serenity in the Heart of Ooty</p>
+      <span class="block h-px w-12 md:w-20" style="background:linear-gradient(270deg, transparent, var(--teak-light))"></span>
+    </div>
+
+    <div class="hero-in flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4">
+      <a href="#rooms" class="btn btn-primary w-full max-w-xs sm:w-auto sm:max-w-none" data-cursor="hover" data-ripple="">Explore Rooms</a>
+      <a href="#booking" class="btn btn-ghost w-full max-w-xs sm:w-auto sm:max-w-none" data-cursor="hover" data-ripple="">Book Your Stay</a>
+    </div>
+  </div>
+
+  <!-- Floating glass stat rail — reacts to pointer -->
+  <div class="absolute bottom-0 left-0 w-full z-10 hidden md:block">
+    <div class="mx-auto max-w-[1560px] px-10 pb-9">
+      <div class="glass glass-sheen hero-in rounded-2xl px-8 py-5 flex items-center justify-between gap-6" data-parallax="0.035">
+        <div class="flex items-center gap-3">
+          <span class="num-mark">01</span>
+          <p class="text-[0.68rem] uppercase" style="letter-spacing:0.2em; color:rgba(236,234,227,0.8)">2,200 m Elevation</p>
+        </div>
+        <span class="h-8 w-px" style="background:rgba(215,220,216,0.13)"></span>
+        <div class="flex items-center gap-3">
+          <span class="num-mark">02</span>
+          <p class="text-[0.68rem] uppercase" style="letter-spacing:0.2em; color:rgba(236,234,227,0.8)">Seven Room Categories</p>
+        </div>
+        <span class="h-8 w-px" style="background:rgba(215,220,216,0.13)"></span>
+        <div class="flex items-center gap-3">
+          <span class="num-mark">03</span>
+          <p class="text-[0.68rem] uppercase" style="letter-spacing:0.2em; color:rgba(236,234,227,0.8)">Breakfast Included</p>
+        </div>
+        <span class="h-8 w-px" style="background:rgba(215,220,216,0.13)"></span>
+        <div class="flex items-center gap-3">
+          <span class="num-mark">04</span>
+          <p class="text-[0.68rem] uppercase" style="letter-spacing:0.2em; color:rgba(236,234,227,0.8)">Balacola, Ooty</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <a href="#welcome" class="absolute bottom-8 md:bottom-36 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-3 hero-in" data-cursor="hover" aria-label="Scroll to explore">
+    <div class="mouse-shape"></div>
+    <span class="text-[0.54rem] uppercase" style="letter-spacing:0.32em; color:rgba(236,234,227,0.55)">Scroll</span>
+    <div class="scroll-track"></div>
+  </a>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     02 · WELCOME
+     ══════════════════════════════════════════════════════════ -->
+<section id="welcome" class="relative py-28 md:py-44 overflow-hidden" style="background:var(--charcoal-deep)">
+  <div class="absolute -top-40 -left-40 w-[620px] h-[620px] rounded-full pointer-events-none" style="background:radial-gradient(circle, rgba(44,74,63,0.34), transparent 68%); filter:blur(50px)"></div>
+
+  <div class="relative mx-auto max-w-[1560px] px-6 md:px-10">
+    <div class="grid lg:grid-cols-12 gap-14 lg:gap-20 items-center">
+
+      <div class="lg:col-span-5 reveal" data-reveal="">
+        <p class="eyebrow mb-6">02 — Welcome</p>
+        <h2 class="display-xl mb-8" style="font-size:clamp(2.1rem, 4.6vw, 4rem); color:var(--ivory-warm)">
+          <span class="line-mask"><span>A quiet address</span></span>
+          <span class="line-mask"><span style="transition-delay:0.1s">above the clouds.</span></span>
+        </h2>
+        <div class="hairline w-24 mb-8"></div>
+        <p class="lede text-[0.98rem] md:text-[1.05rem] mb-6">
+          Silverline sits on a fold of hillside in Balacola, where the road narrows and the eucalyptus closes
+          overhead. Mornings arrive slowly here — fog resting in the valley, tea terraces surfacing as the light
+          turns. Nothing is rushed.
+        </p>
+        <p class="lede text-[0.98rem] md:text-[1.05rem] mb-10">
+          Seven room categories, each oriented toward the valley. Warm wood, ivory linen, and windows built for
+          weather-watching. The mountain does most of the work; we simply keep out of its way.
+        </p>
+        <a href="#rooms" class="btn btn-ghost" data-cursor="hover" data-ripple="">Discover the Rooms</a>
+      </div>
+
+      <div class="lg:col-span-7 reveal" data-reveal="">
+        <div class="img-reveal relative rounded-[2px] overflow-hidden" data-parallax="0.05">
+          <img src="../images/b867e01c-ea09-491c-8ec6-7172bbc53f07.png" alt="Silverline Resort above the Kathadimattam road, tea terraces and the Nilgiri hills beyond" loading="lazy" class="w-full h-[400px] md:h-[480px] lg:h-[620px] object-cover" style="object-position:center 55%">
+          <div class="absolute inset-0" style="background:linear-gradient(180deg, transparent 55%, rgba(13,16,18,0.6))"></div>
+        </div>
+        <div class="mt-6 flex items-start justify-between gap-6">
+          <p class="text-[0.66rem] uppercase" style="letter-spacing:0.2em; color:var(--stone)">The Resort · Balacola</p>
+          <p class="font-display italic text-[0.95rem]" style="color:var(--teak-light)">11°N, 76°E</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     03 · NATURE EXPERIENCE (pinned parallax band)
+     ══════════════════════════════════════════════════════════ -->
+<section id="nature" class="relative">
+  <div class="relative h-[105svh] min-h-[480px] overflow-hidden flex items-center justify-center">
+    <div class="absolute inset-0 will-change-transform" data-bg-parallax="">
+      <img src="../images/fed576b7-7429-445e-a8ee-30f549a2b6f7.png" alt="Tea slopes and pine stands falling away into the valley below the resort" loading="lazy" class="w-full h-[125%] object-cover" style="object-position:center 60%">
+    </div>
+    <div class="absolute inset-0" style="background:linear-gradient(180deg, rgba(13,16,18,0.86) 0%, rgba(13,16,18,0.34) 45%, rgba(13,16,18,0.9) 100%)"></div>
+
+    <div class="relative z-10 max-w-3xl px-6 text-center reveal" data-reveal="">
+      <p class="eyebrow mb-7">03 — Nature Experience</p>
+      <h2 class="display-xl mb-9" style="font-size:clamp(2.2rem, 6vw, 5.2rem); color:var(--ivory-warm)">
+        <span class="line-mask"><span>The forest sets</span></span>
+        <span class="line-mask"><span style="transition-delay:0.12s">the tempo.</span></span>
+      </h2>
+      <p class="lede text-[1rem] md:text-[1.1rem] max-w-xl mx-auto mb-11" style="color:rgba(236,234,227,0.76)">
+        Shola woodland, tea slopes, and a mist that moves like weather in a held breath. Walk out at first light
+        and the valley is entirely yours.
+      </p>
+      <div class="flex flex-wrap items-center justify-center gap-x-9 gap-y-4">
+        <p class="text-[0.66rem] uppercase" style="letter-spacing:0.22em; color:rgba(236,234,227,0.62)">Guided Hill Walks</p>
+        <span class="w-1 h-1 rounded-full" style="background:var(--teak)"></span>
+        <p class="text-[0.66rem] uppercase" style="letter-spacing:0.22em; color:rgba(236,234,227,0.62)">Tea Estate Trails</p>
+        <span class="w-1 h-1 rounded-full" style="background:var(--teak)"></span>
+        <p class="text-[0.66rem] uppercase" style="letter-spacing:0.22em; color:rgba(236,234,227,0.62)">Birdsong at Dawn</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     04 · ROOMS
+     ══════════════════════════════════════════════════════════ -->
+<section id="rooms" class="relative py-28 md:py-40 overflow-hidden" style="background:var(--charcoal-deep)">
+  <div class="absolute top-1/3 -right-52 w-[640px] h-[640px] rounded-full pointer-events-none" style="background:radial-gradient(circle, rgba(44,74,63,0.3), transparent 68%); filter:blur(56px)"></div>
+
+  <div class="relative mx-auto max-w-[1560px] px-6 md:px-10">
+
+    <div class="max-w-3xl mb-16 md:mb-24 reveal" data-reveal="">
+      <p class="eyebrow mb-6">04 — Accommodation</p>
+      <h2 class="display-xl mb-7" style="font-size:clamp(2.1rem, 5vw, 4.4rem); color:var(--ivory-warm)">
+        <span class="line-mask"><span>Seven ways to</span></span>
+        <span class="line-mask"><span style="transition-delay:0.1s">wake up in the hills.</span></span>
+      </h2>
+      <div class="hairline w-28 mb-7"></div>
+      <p class="lede text-[0.98rem] md:text-[1.04rem]">
+        Every category includes breakfast, complimentary WiFi, on-site parking, and an unobstructed view of the
+        valley. Rates are per night for two guests.
+      </p>
+    </div>
+
+    <div class="tilt-scene grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-7" id="rooms-grid">
+      <!-- rooms injected below in markup -->
+
+      <!-- ROOM 1 -->
+      <article class="tilt-card edge-glow glass rounded-[3px] overflow-hidden reveal" data-reveal="" data-tilt="" data-cursor="hover">
+        <div class="img-reveal relative h-[248px] overflow-hidden">
+          <img src="../images/7fc788a5-27e2-48f4-999b-ed96c43bb1d7.png" alt="Standard Room — teak bed, crisp white linen, curtained window" loading="lazy" class="w-full h-full object-cover" style="object-position:30% center">
+          <div class="absolute inset-0" style="background:linear-gradient(180deg, transparent 48%, rgba(13,16,18,0.72))"></div>
+          <span class="absolute top-4 left-4 num-mark">01</span>
+        </div>
+        <div class="p-7 tilt-lift">
+          <div class="flex items-start justify-between gap-4 mb-5">
+            <h3 class="font-display text-[1.5rem] leading-tight" style="color:var(--ivory-warm)">Standard Room</h3>
+            <div class="text-right shrink-0">
+              <p class="font-display text-[1.35rem] leading-none" style="color:var(--teak-light)">₹4,500</p>
+              <p class="text-[0.56rem] uppercase mt-1" style="letter-spacing:0.2em; color:var(--stone)">per night</p>
+            </div>
+          </div>
+          <p class="lede text-[0.86rem] mb-6">A calm, compact room with a garden-facing window and warm oak underfoot.</p>
+          <ul class="grid grid-cols-2 gap-y-2.5 gap-x-3 mb-7 text-[0.7rem]" style="color:rgba(236,234,227,0.66)">
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Sleeps 2</li>
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Breakfast Included</li>
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Free WiFi</li>
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Parking</li>
+          </ul>
+          <a href="#booking" class="btn btn-ghost w-full !py-3.5" data-cursor="hover" data-ripple="">Book Now</a>
+        </div>
+      </article>
+
+      <!-- ROOM 2 -->
+      <article class="tilt-card edge-glow glass rounded-[3px] overflow-hidden reveal" data-reveal="" data-tilt="" data-cursor="hover">
+        <div class="img-reveal relative h-[248px] overflow-hidden">
+          <img src="../images/2eb00a7c-5768-4396-808d-a1684b0f8bfa.png" alt="Deluxe — twin teak beds beneath a curtained valley-facing window" loading="lazy" class="w-full h-full object-cover" style="object-position:35% 38%">
+          <div class="absolute inset-0" style="background:linear-gradient(180deg, transparent 48%, rgba(13,16,18,0.72))"></div>
+          <span class="absolute top-4 left-4 num-mark">02</span>
+        </div>
+        <div class="p-7 tilt-lift">
+          <div class="flex items-start justify-between gap-4 mb-5">
+            <h3 class="font-display text-[1.5rem] leading-tight" style="color:var(--ivory-warm)">Deluxe</h3>
+            <div class="text-right shrink-0">
+              <p class="font-display text-[1.35rem] leading-none" style="color:var(--teak-light)">₹5,800</p>
+              <p class="text-[0.56rem] uppercase mt-1" style="letter-spacing:0.2em; color:var(--stone)">per night</p>
+            </div>
+          </div>
+          <p class="lede text-[0.86rem] mb-6">Teak-panelled walls and a wide window framing the tea terraces below.</p>
+          <ul class="grid grid-cols-2 gap-y-2.5 gap-x-3 mb-7 text-[0.7rem]" style="color:rgba(236,234,227,0.66)">
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Sleeps 2</li>
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Breakfast Included</li>
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Free WiFi</li>
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Parking</li>
+          </ul>
+          <a href="#booking" class="btn btn-ghost w-full !py-3.5" data-cursor="hover" data-ripple="">Book Now</a>
+        </div>
+      </article>
+
+      <!-- ROOM 3 -->
+      <article class="tilt-card edge-glow glass rounded-[3px] overflow-hidden reveal" data-reveal="" data-tilt="" data-cursor="hover">
+        <div class="img-reveal relative h-[248px] overflow-hidden">
+          <img src="../images/7fc788a5-27e2-48f4-999b-ed96c43bb1d7.png" alt="Deluxe Suite — carved teak king bed, wardrobe and window seat" loading="lazy" class="w-full h-full object-cover" style="object-position:62% center">
+          <div class="absolute inset-0" style="background:linear-gradient(180deg, transparent 48%, rgba(13,16,18,0.72))"></div>
+          <span class="absolute top-4 left-4 num-mark">03</span>
+        </div>
+        <div class="p-7 tilt-lift">
+          <div class="flex items-start justify-between gap-4 mb-5">
+            <h3 class="font-display text-[1.5rem] leading-tight" style="color:var(--ivory-warm)">Deluxe Suite</h3>
+            <div class="text-right shrink-0">
+              <p class="font-display text-[1.35rem] leading-none" style="color:var(--teak-light)">₹7,200</p>
+              <p class="text-[0.56rem] uppercase mt-1" style="letter-spacing:0.2em; color:var(--stone)">per night</p>
+            </div>
+          </div>
+          <p class="lede text-[0.86rem] mb-6">A separate sitting room with a brass reading lamp and pine-forest outlook.</p>
+          <ul class="grid grid-cols-2 gap-y-2.5 gap-x-3 mb-7 text-[0.7rem]" style="color:rgba(236,234,227,0.66)">
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Sleeps 2</li>
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Breakfast Included</li>
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Free WiFi</li>
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Parking</li>
+          </ul>
+          <a href="#booking" class="btn btn-ghost w-full !py-3.5" data-cursor="hover" data-ripple="">Book Now</a>
+        </div>
+      </article>
+
+      <!-- ROOM 4 -->
+      <article class="tilt-card edge-glow glass rounded-[3px] overflow-hidden reveal" data-reveal="" data-tilt="" data-cursor="hover">
+        <div class="img-reveal relative h-[248px] overflow-hidden">
+          <img src="../images/1f25b6a7-6baa-4d9a-89ab-8a10aad0aabf.png" alt="Suite — spacious room with louvred teak wardrobe and twin beds" loading="lazy" class="w-full h-full object-cover" style="object-position:72% center">
+          <div class="absolute inset-0" style="background:linear-gradient(180deg, transparent 48%, rgba(13,16,18,0.72))"></div>
+          <span class="absolute top-4 left-4 num-mark">04</span>
+        </div>
+        <div class="p-7 tilt-lift">
+          <div class="flex items-start justify-between gap-4 mb-5">
+            <h3 class="font-display text-[1.5rem] leading-tight" style="color:var(--ivory-warm)">Suite</h3>
+            <div class="text-right shrink-0">
+              <p class="font-display text-[1.35rem] leading-none" style="color:var(--teak-light)">₹8,600</p>
+              <p class="text-[0.56rem] uppercase mt-1" style="letter-spacing:0.2em; color:var(--stone)">per night</p>
+            </div>
+          </div>
+          <p class="lede text-[0.86rem] mb-6">A corner suite with dual aspect windows and the widest view on the property.</p>
+          <ul class="grid grid-cols-2 gap-y-2.5 gap-x-3 mb-7 text-[0.7rem]" style="color:rgba(236,234,227,0.66)">
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Sleeps 2</li>
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Breakfast Included</li>
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Free WiFi</li>
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Parking</li>
+          </ul>
+          <a href="#booking" class="btn btn-ghost w-full !py-3.5" data-cursor="hover" data-ripple="">Book Now</a>
+        </div>
+      </article>
+
+      <!-- ROOM 5 -->
+      <article class="tilt-card edge-glow glass rounded-[3px] overflow-hidden reveal" data-reveal="" data-tilt="" data-cursor="hover">
+        <div class="img-reveal relative h-[248px] overflow-hidden">
+          <img src="../images/40477c78-4143-4066-818a-39cf46d5d35d.png" alt="Deluxe Balcony — tiered private balconies facing the tea slopes" loading="lazy" class="w-full h-full object-cover" style="object-position:38% 62%">
+          <div class="absolute inset-0" style="background:linear-gradient(180deg, transparent 48%, rgba(13,16,18,0.72))"></div>
+          <span class="absolute top-4 left-4 num-mark">05</span>
+        </div>
+        <div class="p-7 tilt-lift">
+          <div class="flex items-start justify-between gap-4 mb-5">
+            <h3 class="font-display text-[1.5rem] leading-tight" style="color:var(--ivory-warm)">Deluxe Balcony</h3>
+            <div class="text-right shrink-0">
+              <p class="font-display text-[1.35rem] leading-none" style="color:var(--teak-light)">₹9,400</p>
+              <p class="text-[0.56rem] uppercase mt-1" style="letter-spacing:0.2em; color:var(--stone)">per night</p>
+            </div>
+          </div>
+          <p class="lede text-[0.86rem] mb-6">Teak doors open onto a private terrace — the best seat for the morning fog.</p>
+          <ul class="grid grid-cols-2 gap-y-2.5 gap-x-3 mb-7 text-[0.7rem]" style="color:rgba(236,234,227,0.66)">
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Sleeps 2</li>
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Breakfast Included</li>
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Free WiFi</li>
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Parking</li>
+          </ul>
+          <a href="#booking" class="btn btn-ghost w-full !py-3.5" data-cursor="hover" data-ripple="">Book Now</a>
+        </div>
+      </article>
+
+      <!-- ROOM 6 -->
+      <article class="tilt-card edge-glow glass rounded-[3px] overflow-hidden reveal" data-reveal="" data-tilt="" data-cursor="hover">
+        <div class="img-reveal relative h-[248px] overflow-hidden">
+          <img src="../images/2eb00a7c-5768-4396-808d-a1684b0f8bfa.png" alt="2 Bedroom Deluxe — two teak beds, chest of drawers and garden window" loading="lazy" class="w-full h-full object-cover" style="object-position:52% 34%">
+          <div class="absolute inset-0" style="background:linear-gradient(180deg, transparent 48%, rgba(13,16,18,0.72))"></div>
+          <span class="absolute top-4 left-4 num-mark">06</span>
+        </div>
+        <div class="p-7 tilt-lift">
+          <div class="flex items-start justify-between gap-4 mb-5">
+            <h3 class="font-display text-[1.5rem] leading-tight" style="color:var(--ivory-warm)">2 Bedroom Deluxe</h3>
+            <div class="text-right shrink-0">
+              <p class="font-display text-[1.35rem] leading-none" style="color:var(--teak-light)">₹12,500</p>
+              <p class="text-[0.56rem] uppercase mt-1" style="letter-spacing:0.2em; color:var(--stone)">per night</p>
+            </div>
+          </div>
+          <p class="lede text-[0.86rem] mb-6">Two bedrooms around a shared living room with a working stone fireplace.</p>
+          <ul class="grid grid-cols-2 gap-y-2.5 gap-x-3 mb-7 text-[0.7rem]" style="color:rgba(236,234,227,0.66)">
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Sleeps 2 + 2</li>
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Breakfast Included</li>
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Free WiFi</li>
+            <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Parking</li>
+          </ul>
+          <a href="#booking" class="btn btn-ghost w-full !py-3.5" data-cursor="hover" data-ripple="">Book Now</a>
+        </div>
+      </article>
+
+      <!-- ROOM 7 — wide feature card -->
+      <article class="tilt-card edge-glow glass rounded-[3px] overflow-hidden reveal sm:col-span-2 lg:col-span-3" data-reveal="" data-tilt="" data-tilt-soft="" data-cursor="hover">
+        <div class="grid md:grid-cols-2 h-full">
+          <div class="img-reveal relative h-[280px] md:h-full min-h-[300px] overflow-hidden">
+            <img src="../images/1f25b6a7-6baa-4d9a-89ab-8a10aad0aabf.png" alt="2 Bedroom Deluxe Suite — the largest residence at Silverline" loading="lazy" class="w-full h-full object-cover" style="object-position:45% center">
+            <div class="absolute inset-0" style="background:linear-gradient(90deg, transparent 40%, rgba(13,16,18,0.5))"></div>
+            <span class="absolute top-4 left-4 num-mark">07</span>
+          </div>
+          <div class="p-8 md:p-11 flex flex-col justify-center tilt-lift">
+            <p class="eyebrow mb-4" style="color:var(--teak-light)">The Residence</p>
+            <div class="flex flex-wrap items-start justify-between gap-4 mb-5">
+              <h3 class="font-display text-[1.7rem] md:text-[2.3rem] leading-tight" style="color:var(--ivory-warm)">
+                2 Bedroom<br class="hidden md:block"> Deluxe Suite
+              </h3>
+              <div class="text-right shrink-0">
+                <p class="font-display text-[1.7rem] leading-none" style="color:var(--teak-light)">₹15,900</p>
+                <p class="text-[0.56rem] uppercase mt-1" style="letter-spacing:0.2em; color:var(--stone)">per night</p>
+              </div>
+            </div>
+            <p class="lede text-[0.92rem] mb-8 max-w-md">
+              Our largest residence — two bedrooms, a full sitting room, dining space, and a private stretch of
+              terrace facing the deepest part of the valley. Designed for families and long, slow stays.
+            </p>
+            <ul class="grid grid-cols-2 gap-y-3 gap-x-4 mb-9 text-[0.72rem] max-w-md" style="color:rgba(236,234,227,0.7)">
+              <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Sleeps 2 + 2</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Breakfast Included</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Free WiFi</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Parking</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Private Terrace</li>
+              <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full shrink-0" style="background:var(--teak)"></span>Valley View</li>
+            </ul>
+            <a href="#booking" class="btn btn-primary self-start" data-cursor="hover" data-ripple="">Book Now</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     05 · AMENITIES
+     ══════════════════════════════════════════════════════════ -->
+<section id="amenities" class="relative py-28 md:py-40" style="background:var(--forest-deep)">
+  <div class="mx-auto max-w-[1560px] px-6 md:px-10">
+
+    <div class="grid lg:grid-cols-12 gap-14 lg:gap-20">
+
+      <div class="lg:col-span-4 reveal" data-reveal="">
+        <p class="eyebrow mb-6">05 — Amenities</p>
+        <h2 class="display-xl mb-7" style="font-size:clamp(2rem, 4.2vw, 3.6rem); color:var(--ivory-warm)">
+          <span class="line-mask"><span>Everything</span></span>
+          <span class="line-mask"><span style="transition-delay:0.1s">considered.</span></span>
+        </h2>
+        <div class="hairline w-24 mb-7"></div>
+        <p class="lede text-[0.96rem] mb-10">
+          Included with every room, without exception or upsell. The essentials, done properly.
+        </p>
+        <div class="img-reveal rounded-[2px] overflow-hidden hidden lg:block">
+          <img src="../images/8b8c4bef-7b83-4fbf-b1d1-7acbbba9493a.png" alt="The valley view from the resort — farmland, tea terraces and layered hills" loading="lazy" class="w-full h-[340px] object-cover" style="object-position:center 58%">
+        </div>
+      </div>
+
+      <div class="lg:col-span-8">
+        <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-px" style="background:rgba(215,220,216,0.08)">
+
+          <!-- Breakfast -->
+          <div class="amenity-item reveal group p-8 md:p-10 transition-colors duration-700 hover:bg-white/[0.02]" data-reveal="" style="background:var(--forest-deep)" data-cursor="hover">
+            <div class="amenity-ring w-14 h-14 rounded-full flex items-center justify-center mb-7 border" style="border-color:rgba(215,220,216,0.16)">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--teak-light)" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+                <path class="ico-stroke" style="--len:70" d="M4 13h12v3a5 5 0 01-5 5H9a5 5 0 01-5-5v-3z"></path>
+                <path class="ico-stroke" style="--len:34" d="M16 13h2.5a2.5 2.5 0 010 5H16"></path>
+                <path class="ico-stroke" style="--len:22" d="M7 9V6.5M11 9V5.5M15 9V6.5"></path>
+              </svg>
+            </div>
+            <h3 class="font-display text-[1.4rem] mb-3" style="color:var(--ivory-warm)">Breakfast</h3>
+            <p class="lede text-[0.85rem]">South Indian and continental, served facing the valley from 7:30.</p>
+          </div>
+
+          <!-- Free WiFi -->
+          <div class="amenity-item reveal group p-8 md:p-10 transition-colors duration-700 hover:bg-white/[0.02]" data-reveal="" style="background:var(--forest-deep); transition-delay:0.08s" data-cursor="hover">
+            <div class="amenity-ring w-14 h-14 rounded-full flex items-center justify-center mb-7 border" style="border-color:rgba(215,220,216,0.16)">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--teak-light)" stroke-width="1.1" stroke-linecap="round">
+                <path class="ico-stroke" style="--len:44" d="M2.5 9.5a15 15 0 0119 0"></path>
+                <path class="ico-stroke" style="--len:32" d="M5.8 13.2a10 10 0 0112.4 0"></path>
+                <path class="ico-stroke" style="--len:20" d="M9 16.8a5 5 0 016 0"></path>
+                <circle class="ico-stroke" style="--len:8" cx="12" cy="20" r="1"></circle>
+              </svg>
+            </div>
+            <h3 class="font-display text-[1.4rem] mb-3" style="color:var(--ivory-warm)">Free WiFi</h3>
+            <p class="lede text-[0.85rem]">Fibre throughout the property, strong enough to work — or to ignore.</p>
+          </div>
+
+          <!-- Parking -->
+          <div class="amenity-item reveal group p-8 md:p-10 transition-colors duration-700 hover:bg-white/[0.02]" data-reveal="" style="background:var(--forest-deep); transition-delay:0.16s" data-cursor="hover">
+            <div class="amenity-ring w-14 h-14 rounded-full flex items-center justify-center mb-7 border" style="border-color:rgba(215,220,216,0.16)">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--teak-light)" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+                <path class="ico-stroke" style="--len:56" d="M3 17v-4.2L5 7h14l2 5.8V17"></path>
+                <path class="ico-stroke" style="--len:20" d="M3 13h18"></path>
+                <circle class="ico-stroke" style="--len:12" cx="7" cy="17" r="1.6"></circle>
+                <circle class="ico-stroke" style="--len:12" cx="17" cy="17" r="1.6"></circle>
+              </svg>
+            </div>
+            <h3 class="font-display text-[1.4rem] mb-3" style="color:var(--ivory-warm)">Parking</h3>
+            <p class="lede text-[0.85rem]">Complimentary on-site parking, sheltered beneath the eucalyptus.</p>
+          </div>
+
+          <!-- Nature View -->
+          <div class="amenity-item reveal group p-8 md:p-10 transition-colors duration-700 hover:bg-white/[0.02]" data-reveal="" style="background:var(--forest-deep)" data-cursor="hover">
+            <div class="amenity-ring w-14 h-14 rounded-full flex items-center justify-center mb-7 border" style="border-color:rgba(215,220,216,0.16)">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--teak-light)" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+                <path class="ico-stroke" style="--len:60" d="M2 18l6-8.5 4 5.4 3.2-4.4L21 18H2z"></path>
+                <circle class="ico-stroke" style="--len:14" cx="17" cy="6" r="2.2"></circle>
+              </svg>
+            </div>
+            <h3 class="font-display text-[1.4rem] mb-3" style="color:var(--ivory-warm)">Nature View</h3>
+            <p class="lede text-[0.85rem]">Every window opens onto shola forest, tea slopes, or open valley.</p>
+          </div>
+
+          <!-- Comfortable Stay -->
+          <div class="amenity-item reveal group p-8 md:p-10 transition-colors duration-700 hover:bg-white/[0.02]" data-reveal="" style="background:var(--forest-deep); transition-delay:0.08s" data-cursor="hover">
+            <div class="amenity-ring w-14 h-14 rounded-full flex items-center justify-center mb-7 border" style="border-color:rgba(215,220,216,0.16)">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--teak-light)" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+                <path class="ico-stroke" style="--len:58" d="M3 18v-6a2 2 0 012-2h14a2 2 0 012 2v6"></path>
+                <path class="ico-stroke" style="--len:30" d="M6 10V7.5A1.5 1.5 0 017.5 6h9A1.5 1.5 0 0118 7.5V10"></path>
+                <path class="ico-stroke" style="--len:20" d="M3 18h18"></path>
+              </svg>
+            </div>
+            <h3 class="font-display text-[1.4rem] mb-3" style="color:var(--ivory-warm)">Comfortable Stay</h3>
+            <p class="lede text-[0.85rem]">Deep mattresses, heavy blankets, hot water, and genuine quiet.</p>
+          </div>
+
+          <!-- Luxury Rooms -->
+          <div class="amenity-item reveal group p-8 md:p-10 transition-colors duration-700 hover:bg-white/[0.02]" data-reveal="" style="background:var(--forest-deep); transition-delay:0.16s" data-cursor="hover">
+            <div class="amenity-ring w-14 h-14 rounded-full flex items-center justify-center mb-7 border" style="border-color:rgba(215,220,216,0.16)">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--teak-light)" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+                <path class="ico-stroke" style="--len:62" d="M12 3l2.6 5.6 6.1.8-4.4 4.3 1.1 6-5.4-2.9L6.6 19.7l1.1-6L3.3 9.4l6.1-.8L12 3z"></path>
+              </svg>
+            </div>
+            <h3 class="font-display text-[1.4rem] mb-3" style="color:var(--ivory-warm)">Luxury Rooms</h3>
+            <p class="lede text-[0.85rem]">Seven categories, from a compact double to a two-bedroom residence.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     06 · GALLERY
+     ══════════════════════════════════════════════════════════ -->
+<section id="gallery" class="relative py-28 md:py-40 overflow-hidden" style="background:var(--charcoal-deep)">
+  <div class="mx-auto max-w-[1560px] px-6 md:px-10">
+
+    <div class="flex flex-wrap items-end justify-between gap-8 mb-14 md:mb-20 reveal" data-reveal="">
+      <div class="max-w-2xl">
+        <p class="eyebrow mb-6">06 — Gallery</p>
+        <h2 class="display-xl mb-6" style="font-size:clamp(2.1rem, 5vw, 4.4rem); color:var(--ivory-warm)">
+          <span class="line-mask"><span>The property,</span></span>
+          <span class="line-mask"><span style="transition-delay:0.1s">unhurried.</span></span>
+        </h2>
+        <div class="hairline w-28"></div>
+      </div>
+      <p class="text-[0.66rem] uppercase max-w-[220px]" style="letter-spacing:0.2em; color:var(--stone)">
+        Select any frame to view full screen
+      </p>
+    </div>
+
+    <!-- Parallax masonry — real Silverline photography -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+
+      <!-- Hero frame: aerial of the property -->
+      <div class="gal-item reveal rounded-[2px] col-span-2 row-span-2" data-reveal="" data-parallax="0.03" data-lightbox="https://api.moda.app/api/v2/images/ref/780dc84d-887e-4f96-a14c-2b97e7646540?v=053782ec0b4473cd&amp;s=663c33dffd8ed11a19e2e47e1788dfb2" data-cursor="hover">
+        <img src="../images/780dc84d-887e-4f96-a14c-2b97e7646540.png" alt="Aerial view of Silverline Resort among the tea slopes" loading="lazy" class="w-full h-full min-h-[280px] md:min-h-[360px] lg:min-h-[540px] object-cover" style="object-position:center 45%">
+        <p class="gal-cap absolute bottom-5 left-5 text-[0.68rem] uppercase z-10" style="letter-spacing:0.2em; color:var(--ivory)">The Property · From Above</p>
+      </div>
+
+      <!-- Interior: the Deluxe Suite -->
+      <div class="gal-item reveal rounded-[2px]" data-reveal="" data-parallax="0.055" data-lightbox="https://api.moda.app/api/v2/images/ref/7fc788a5-27e2-48f4-999b-ed96c43bb1d7?v=40d844e39ba7cf83&amp;s=bab533b67fea4f4284f5a8bd431728da" data-cursor="hover">
+        <img src="../images/7fc788a5-27e2-48f4-999b-ed96c43bb1d7.png" alt="Interior of the Deluxe Suite — carved teak bed and white linen" loading="lazy" class="w-full h-[200px] md:h-[230px] lg:h-[260px] object-cover" style="object-position:center 45%">
+        <p class="gal-cap absolute bottom-4 left-4 text-[0.64rem] uppercase z-10" style="letter-spacing:0.18em; color:var(--ivory)">Interiors</p>
+      </div>
+
+      <!-- Scenic: the valley view -->
+      <div class="gal-item reveal rounded-[2px]" data-reveal="" data-parallax="0.04" data-lightbox="https://api.moda.app/api/v2/images/ref/8b8c4bef-7b83-4fbf-b1d1-7acbbba9493a?v=dcaf297b3402e99d&amp;s=f4fd369696d72e7edcccb6c466616f49" data-cursor="hover">
+        <img src="../images/8b8c4bef-7b83-4fbf-b1d1-7acbbba9493a.png" alt="The valley and layered Nilgiri hills seen from the resort" loading="lazy" class="w-full h-[200px] md:h-[230px] lg:h-[260px] object-cover" style="object-position:center 62%">
+        <p class="gal-cap absolute bottom-4 left-4 text-[0.64rem] uppercase z-10" style="letter-spacing:0.18em; color:var(--ivory)">Valley View</p>
+      </div>
+
+      <!-- Aerial detail: roof terrace and balconies -->
+      <div class="gal-item reveal rounded-[2px]" data-reveal="" data-parallax="0.06" data-lightbox="https://api.moda.app/api/v2/images/ref/d76354c5-f1ea-4821-8b45-90b1201938e0?v=6cadde75b37ed73e&amp;s=e0ca1c1f30044b4a45f3f99ce44c1327" data-cursor="hover">
+        <img src="../images/d76354c5-f1ea-4821-8b45-90b1201938e0.png" alt="Overhead view of the resort terraces, balconies and garden" loading="lazy" class="w-full h-[200px] md:h-[230px] lg:h-[260px] object-cover" style="object-position:center 40%">
+        <p class="gal-cap absolute bottom-4 left-4 text-[0.64rem] uppercase z-10" style="letter-spacing:0.18em; color:var(--ivory)">Terraces &amp; Garden</p>
+      </div>
+
+      <!-- Exterior: the resort from the road -->
+      <div class="gal-item reveal rounded-[2px]" data-reveal="" data-parallax="0.045" data-lightbox="https://api.moda.app/api/v2/images/ref/b867e01c-ea09-491c-8ec6-7172bbc53f07?v=7201c15eb43eb8ec&amp;s=fe6d806e370c2ba69b757747160e8a0b" data-cursor="hover">
+        <img src="../images/b867e01c-ea09-491c-8ec6-7172bbc53f07.png" alt="Silverline Resort exterior with the hills behind" loading="lazy" class="w-full h-[200px] md:h-[230px] lg:h-[260px] object-cover" style="object-position:center 58%">
+        <p class="gal-cap absolute bottom-4 left-4 text-[0.64rem] uppercase z-10" style="letter-spacing:0.18em; color:var(--ivory)">The Exterior</p>
+      </div>
+
+      <!-- Interior: twin room -->
+      <div class="gal-item reveal rounded-[2px]" data-reveal="" data-parallax="0.05" data-lightbox="https://api.moda.app/api/v2/images/ref/1f25b6a7-6baa-4d9a-89ab-8a10aad0aabf?v=715f21fbc7b04120&amp;s=d8bee081c169683969668bcca660487a" data-cursor="hover">
+        <img src="../images/1f25b6a7-6baa-4d9a-89ab-8a10aad0aabf.png" alt="Twin-bed suite with louvred teak wardrobe" loading="lazy" class="w-full h-[200px] md:h-[230px] lg:h-[260px] object-cover" style="object-position:center 55%">
+        <p class="gal-cap absolute bottom-4 left-4 text-[0.64rem] uppercase z-10" style="letter-spacing:0.18em; color:var(--ivory)">The Suites</p>
+      </div>
+
+      <!-- Gardens &amp; tea slopes — wide -->
+      <div class="gal-item reveal rounded-[2px] col-span-2" data-reveal="" data-parallax="0.035" data-lightbox="https://api.moda.app/api/v2/images/ref/fed576b7-7429-445e-a8ee-30f549a2b6f7?v=d639bd3c06f7d00e&amp;s=18a6a38352953c9d45872822930af347" data-cursor="hover">
+        <img src="../images/fed576b7-7429-445e-a8ee-30f549a2b6f7.png" alt="Tea gardens and pine stands on the slopes below the resort" loading="lazy" class="w-full h-[200px] md:h-[230px] lg:h-[260px] object-cover" style="object-position:center 70%">
+        <p class="gal-cap absolute bottom-4 left-4 text-[0.64rem] uppercase z-10" style="letter-spacing:0.18em; color:var(--ivory)">Tea Gardens</p>
+      </div>
+
+      <!-- Aerial: the approach road -->
+      <div class="gal-item reveal rounded-[2px] col-span-2" data-reveal="" data-parallax="0.03" data-lightbox="https://api.moda.app/api/v2/images/ref/40477c78-4143-4066-818a-39cf46d5d35d?v=fb0bea1646afce24&amp;s=bfa9e046795784634d1b55e9a10f30d1" data-cursor="hover">
+        <img src="../images/40477c78-4143-4066-818a-39cf46d5d35d.png" alt="The resort and the Kathadimattam road from the air" loading="lazy" class="w-full h-[200px] md:h-[230px] lg:h-[260px] object-cover" style="object-position:center 48%">
+        <p class="gal-cap absolute bottom-4 left-4 text-[0.64rem] uppercase z-10" style="letter-spacing:0.18em; color:var(--ivory)">The Approach</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     07 · NEARBY ATTRACTIONS
+     ══════════════════════════════════════════════════════════ -->
+<section id="attractions" class="relative py-28 md:py-40" style="background:var(--forest-deep)">
+  <div class="mx-auto max-w-[1560px] px-6 md:px-10">
+
+    <div class="max-w-2xl mb-14 md:mb-20 reveal" data-reveal="">
+      <p class="eyebrow mb-6">07 — Nearby</p>
+      <h2 class="display-xl mb-6" style="font-size:clamp(2.1rem, 5vw, 4.4rem); color:var(--ivory-warm)">
+        <span class="line-mask"><span>Ooty, within</span></span>
+        <span class="line-mask"><span style="transition-delay:0.1s">easy reach.</span></span>
+      </h2>
+      <div class="hairline w-28 mb-7"></div>
+      <p class="lede text-[0.98rem]">
+        Seven of the Nilgiris' most memorable places, all a short drive from the gate. Hover any card for details.
+      </p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+
+      <!-- CARD 1: Emerald Lake -->
+      <article class="attr-card attr-plate reveal rounded-[2px] h-[340px] sm:h-[400px] group" data-reveal="" tabindex="0" data-cursor="hover">
+        <div class="attr-flip-inner">
+          <!-- FRONT -->
+          <div class="attr-face attr-face-front">
+            <div class="attr-veil absolute inset-0"></div>
+            <div class="relative h-full flex flex-col justify-end p-7">
+              <p class="text-[0.6rem] uppercase mb-3" style="letter-spacing:0.24em; color:var(--teak-light)">22 km · 45 min</p>
+              <h3 class="font-display text-[1.75rem] leading-tight mb-1" style="color:var(--ivory-warm)">Emerald Lake</h3>
+              <div class="attr-detail">
+                <p class="lede text-[0.85rem] pt-3">
+                  A still reservoir ringed by tea terraces, best at sunrise when the water holds the whole valley.
+                  Almost no crowds.
+                </p>
+              </div>
+            </div>
+          </div>
+          <!-- BACK -->
+          <div class="attr-face attr-face-back">
+            <img src="../assets/attractions/emerald-lake.jpg" alt="Emerald Lake, Ooty — still reservoir ringed by tea terraces" loading="lazy">
+            <div class="attr-back-overlay">
+              <p class="attr-back-meta">22 km from Silverline <span></span> 45 min drive</p>
+              <h3 class="attr-back-name">Emerald Lake</h3>
+              <p class="attr-back-desc">A glassy reservoir cradled by rolling tea terraces and pine ridgelines. Arrive at first light and the water mirrors the entire valley in silence.</p>
+              <p class="attr-back-hint">Click to return</p>
+            </div>
+          </div>
+        </div>
+        <div class="attr-glare" aria-hidden="true"></div>
+      </article>
+
+      <!-- CARD 2: Ooty Lake -->
+      <article class="attr-card attr-plate reveal rounded-[2px] h-[340px] sm:h-[400px] group" data-reveal="" tabindex="0" data-cursor="hover" style="transition-delay:0.07s">
+        <div class="attr-flip-inner">
+          <!-- FRONT -->
+          <div class="attr-face attr-face-front">
+            <div class="attr-veil absolute inset-0"></div>
+            <div class="relative h-full flex flex-col justify-end p-7">
+              <p class="text-[0.6rem] uppercase mb-3" style="letter-spacing:0.24em; color:var(--teak-light)">9 km · 20 min</p>
+              <h3 class="font-display text-[1.75rem] leading-tight mb-1" style="color:var(--ivory-warm)">Ooty Lake</h3>
+              <div class="attr-detail">
+                <p class="lede text-[0.85rem] pt-3">
+                  The town's colonial-era lake, lined with eucalyptus and wooden rowboats. Pleasant in the late afternoon.
+                </p>
+              </div>
+            </div>
+          </div>
+          <!-- BACK -->
+          <div class="attr-face attr-face-back">
+            <img src="../assets/attractions/ooty-lake.jpg" alt="Ooty Lake — colonial-era lake lined with eucalyptus" loading="lazy">
+            <div class="attr-back-overlay">
+              <p class="attr-back-meta">9 km from Silverline <span></span> 20 min drive</p>
+              <h3 class="attr-back-name">Ooty Lake</h3>
+              <p class="attr-back-desc">A Victorian-era promenade lake edged with tall eucalyptus and weathered rowboats. The late-afternoon light turns the water to hammered copper.</p>
+              <p class="attr-back-hint">Click to return</p>
+            </div>
+          </div>
+        </div>
+        <div class="attr-glare" aria-hidden="true"></div>
+      </article>
+
+      <!-- CARD 3: Rose Garden -->
+      <article class="attr-card attr-plate reveal rounded-[2px] h-[340px] sm:h-[400px] group" data-reveal="" tabindex="0" data-cursor="hover" style="transition-delay:0.14s">
+        <div class="attr-flip-inner">
+          <!-- FRONT -->
+          <div class="attr-face attr-face-front">
+            <div class="attr-veil absolute inset-0"></div>
+            <div class="relative h-full flex flex-col justify-end p-7">
+              <p class="text-[0.6rem] uppercase mb-3" style="letter-spacing:0.24em; color:var(--teak-light)">10 km · 25 min</p>
+              <h3 class="font-display text-[1.75rem] leading-tight mb-1" style="color:var(--ivory-warm)">Rose Garden</h3>
+              <div class="attr-detail">
+                <p class="lede text-[0.85rem] pt-3">
+                  Terraced beds holding thousands of varieties on a hillside above town — one of India's largest rose
+                  collections.
+                </p>
+              </div>
+            </div>
+          </div>
+          <!-- BACK -->
+          <div class="attr-face attr-face-back">
+            <img src="../assets/attractions/rose-garden.jpg" alt="Government Rose Garden Ooty — terraced hillside rose beds" loading="lazy">
+            <div class="attr-back-overlay">
+              <p class="attr-back-meta">10 km from Silverline <span></span> 25 min drive</p>
+              <h3 class="attr-back-name">Rose Garden</h3>
+              <p class="attr-back-desc">Sweeping terraced hillsides holding over 20,000 rose varieties — India's largest collection. Mornings here carry an extraordinary fragrance above the mist.</p>
+              <p class="attr-back-hint">Click to return</p>
+            </div>
+          </div>
+        </div>
+        <div class="attr-glare" aria-hidden="true"></div>
+      </article>
+
+      <!-- CARD 4: Doddabetta Peak -->
+      <article class="attr-card attr-plate reveal rounded-[2px] h-[400px] group" data-reveal="" tabindex="0" data-cursor="hover">
+        <div class="attr-flip-inner">
+          <!-- FRONT -->
+          <div class="attr-face attr-face-front">
+            <div class="attr-veil absolute inset-0"></div>
+            <div class="relative h-full flex flex-col justify-end p-7">
+              <p class="text-[0.6rem] uppercase mb-3" style="letter-spacing:0.24em; color:var(--teak-light)">12 km · 30 min</p>
+              <h3 class="font-display text-[1.75rem] leading-tight mb-1" style="color:var(--ivory-warm)">Doddabetta Peak</h3>
+              <div class="attr-detail">
+                <p class="lede text-[0.85rem] pt-3">
+                  The highest point in the Nilgiris at 2,637 m. On clear mornings the view runs clean across to the plains.
+                </p>
+              </div>
+            </div>
+          </div>
+          <!-- BACK -->
+          <div class="attr-face attr-face-back">
+            <img src="../assets/attractions/doddabetta.jpg" alt="Doddabetta Peak — highest point in the Nilgiris at 2637m" loading="lazy">
+            <div class="attr-back-overlay">
+              <p class="attr-back-meta">12 km from Silverline <span></span> 30 min drive</p>
+              <h3 class="attr-back-name">Doddabetta Peak</h3>
+              <p class="attr-back-desc">At 2,637 metres, the highest summit in the Nilgiris. On a clear morning the Deccan plains are visible far below — a horizon without end.</p>
+              <p class="attr-back-hint">Click to return</p>
+            </div>
+          </div>
+        </div>
+        <div class="attr-glare" aria-hidden="true"></div>
+      </article>
+
+      <!-- CARD 5: Avalanche Lake -->
+      <article class="attr-card attr-plate reveal rounded-[2px] h-[340px] sm:h-[400px] group" data-reveal="" tabindex="0" data-cursor="hover" style="transition-delay:0.07s">
+        <div class="attr-flip-inner">
+          <!-- FRONT -->
+          <div class="attr-face attr-face-front">
+            <div class="attr-veil absolute inset-0"></div>
+            <div class="relative h-full flex flex-col justify-end p-7">
+              <p class="text-[0.6rem] uppercase mb-3" style="letter-spacing:0.24em; color:var(--teak-light)">28 km · 1 hr</p>
+              <h3 class="font-display text-[1.75rem] leading-tight mb-1" style="color:var(--ivory-warm)">Avalanche Lake</h3>
+              <div class="attr-detail">
+                <p class="lede text-[0.85rem] pt-3">
+                  Deep in a protected shola valley — dense forest, trout streams, and some of the quietest air in the range.
+                </p>
+              </div>
+            </div>
+          </div>
+          <!-- BACK -->
+          <div class="attr-face attr-face-back">
+            <img src="../assets/attractions/avalanche-lake.jpg" alt="Avalanche Lake Ooty — shola forest reservoir" loading="lazy">
+            <div class="attr-back-overlay">
+              <p class="attr-back-meta">28 km from Silverline <span></span> 1 hour drive</p>
+              <h3 class="attr-back-name">Avalanche Lake</h3>
+              <p class="attr-back-desc">Buried deep inside a protected shola reserve — trout streams, ancient forest, and air so still you can hear a single leaf fall. A rare kind of quiet.</p>
+              <p class="attr-back-hint">Click to return</p>
+            </div>
+          </div>
+        </div>
+        <div class="attr-glare" aria-hidden="true"></div>
+      </article>
+
+      <!-- CARD 6: Nilgiri Mountain Railway -->
+      <article class="attr-card attr-plate reveal rounded-[2px] h-[340px] sm:h-[400px] group" data-reveal="" tabindex="0" data-cursor="hover" style="transition-delay:0.14s">
+        <div class="attr-flip-inner">
+          <!-- FRONT -->
+          <div class="attr-face attr-face-front">
+            <div class="attr-veil absolute inset-0"></div>
+            <div class="relative h-full flex flex-col justify-end p-7">
+              <p class="text-[0.6rem] uppercase mb-3" style="letter-spacing:0.24em; color:var(--teak-light)">UNESCO Heritage</p>
+              <h3 class="font-display text-[1.75rem] leading-tight mb-1" style="color:var(--ivory-warm)">Nilgiri Mountain Railway</h3>
+              <div class="attr-detail">
+                <p class="lede text-[0.85rem] pt-3">
+                  The steam rack railway from Mettupalayam — five hours of viaducts and tunnels, and worth every one.
+                </p>
+              </div>
+            </div>
+          </div>
+          <!-- BACK -->
+          <div class="attr-face attr-face-back">
+            <img src="../assets/attractions/nilgiri-railway.jpg" alt="Nilgiri Mountain Railway steam train winding through the hills" loading="lazy">
+            <div class="attr-back-overlay">
+              <p class="attr-back-meta">UNESCO World Heritage <span></span> Est. 1908</p>
+              <h3 class="attr-back-name">Nilgiri Mountain Railway</h3>
+              <p class="attr-back-desc">A UNESCO-listed rack-and-pinion steam railway climbing 326 curves and 16 tunnels from Mettupalayam to Ooty. One of the world's great slow journeys.</p>
+              <p class="attr-back-hint">Click to return</p>
+            </div>
+          </div>
+        </div>
+        <div class="attr-glare" aria-hidden="true"></div>
+      </article>
+
+      <!-- CARD 7: Pykara Falls (wide span) -->
+      <article class="attr-card attr-plate reveal rounded-[2px] h-[300px] sm:h-[400px] group sm:col-span-2 lg:col-span-3" data-reveal="" tabindex="0" data-cursor="hover">
+        <div class="attr-flip-inner">
+          <!-- FRONT -->
+          <div class="attr-face attr-face-front">
+            <div class="attr-veil absolute inset-0"></div>
+            <div class="relative h-full flex flex-col justify-end p-7 md:p-10 max-w-xl">
+              <p class="text-[0.6rem] uppercase mb-3" style="letter-spacing:0.24em; color:var(--teak-light)">21 km · 40 min</p>
+              <h3 class="font-display text-[2rem] md:text-[2.4rem] leading-tight mb-1" style="color:var(--ivory-warm)">Pykara Falls</h3>
+              <div class="attr-detail">
+                <p class="lede text-[0.9rem] pt-3">
+                  The Pykara river drops through a series of falls into dense forest below. Loudest and most dramatic
+                  just after the monsoon, when the whole gorge fills with spray.
+                </p>
+              </div>
+            </div>
+          </div>
+          <!-- BACK -->
+          <div class="attr-face attr-face-back">
+            <img src="../assets/attractions/pykara-falls.jpg" alt="Pykara Falls Ooty — river cascading through dense Nilgiri forest" loading="lazy">
+            <div class="attr-back-overlay">
+              <p class="attr-back-meta">21 km from Silverline <span></span> 40 min drive</p>
+              <h3 class="attr-back-name">Pykara Falls</h3>
+              <p class="attr-back-desc">The Pykara river descends in a series of dramatic cascades through dense shola forest. Post-monsoon the gorge fills entirely with spray and the sound is extraordinary.</p>
+              <p class="attr-back-hint">Click to return</p>
+            </div>
+          </div>
+        </div>
+        <div class="attr-glare" aria-hidden="true"></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     08 · BOOKING
+     ══════════════════════════════════════════════════════════ -->
+<section id="booking" class="relative py-28 md:py-40 overflow-hidden" style="background:var(--charcoal-deep)">
+  <div class="absolute inset-0 pointer-events-none" aria-hidden="true" style="background:
+         radial-gradient(ellipse 70% 55% at 20% 8%, rgba(44,74,63,0.55), transparent 62%),
+         radial-gradient(ellipse 60% 50% at 82% 92%, rgba(31,55,48,0.5), transparent 66%),
+         radial-gradient(circle at 68% 22%, rgba(217,180,131,0.10), transparent 55%)"></div>
+  <div class="absolute inset-0" style="background:linear-gradient(180deg, var(--charcoal-deep) 0%, rgba(13,16,18,0.75) 50%, var(--charcoal-deep) 100%)"></div>
+
+  <div class="relative mx-auto max-w-[1560px] px-6 md:px-10">
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-stretch">
+
+      <!-- Left: booking actions -->
+      <div class="reveal" data-reveal="">
+        <p class="eyebrow mb-6">08 — Reservations</p>
+        <h2 class="display-xl mb-7" style="font-size:clamp(2.1rem, 4.6vw, 4rem); color:var(--ivory-warm)">
+          <span class="line-mask"><span>Reserve your</span></span>
+          <span class="line-mask"><span style="transition-delay:0.1s">stay in the hills.</span></span>
+        </h2>
+        <div class="hairline w-24 mb-8"></div>
+        <p class="lede text-[0.98rem] mb-11 max-w-md">
+          Book through your preferred travel partner, or call us directly — we're happy to advise on which room
+          suits your dates and the season.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-3.5 mb-12">
+          <a href="https://www.agoda.com/en-in/silverline-resort/hotel/ooty-in.html?checkin=2026-08-09&checkout=2026-08-10&los=1&rooms=1&adults=2&children=0&cid=1917615&searchrequestid=b7daa277-a4a4-4791-a8af-9d7327e509de&ds=heCoWcx%2FOsbZVKgL" target="_blank" rel="noopener noreferrer" class="btn btn-primary flex-1" data-cursor="hover" data-ripple="">Book on Agoda</a>
+          <a href="https://www.ixigo.com/hotels/3992248/details?locationId=2603820&locationName=Silverline%20Resort&locationType=H&masterLocationId=3024853&countryId=1&checkinDate=06082026&checkoutDate=07082026&adultCount=2&roomCount=1&childCount=0&ab=&cityId=559&stateId=5&searchLocationId=2603820&hotelInfoToken=true%7C2022%7C1&hName=Silverline%20Resort&source=Autocomplete&subsource=Autocomplete&cp=1&cc=&searchId=d894b499-9a4d-48f2-a772-668519e0876b&usid=ecba533a-c3db-475e-9160-f8aab8a7b743" target="_blank" rel="noopener noreferrer" class="btn btn-ghost flex-1" data-cursor="hover" data-ripple="">Book on ixigo</a>
+          <a href="tel:+918638479919" class="btn btn-ghost flex-1" data-cursor="hover" data-ripple="">Call Now</a>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-px rounded-[2px] overflow-hidden" style="background:rgba(215,220,216,0.09)">
+          <div class="glass p-7">
+            <p class="text-[0.58rem] uppercase mb-3" style="letter-spacing:0.26em; color:var(--stone)">Telephone</p>
+            <a href="tel:+918638479919" class="link-line font-display text-[1.35rem] transition-colors duration-500 hover:text-white" style="color:var(--ivory-warm)" data-cursor="hover">+91 86384 79919</a>
+            <p class="mt-3 text-[0.78rem]" style="color:rgba(236,234,227,0.5)">Reception, 7:00 – 22:00 IST</p>
+          </div>
+          <div class="glass p-7">
+            <p class="text-[0.58rem] uppercase mb-3" style="letter-spacing:0.26em; color:var(--stone)">Address</p>
+            <address class="not-italic font-display text-[1.05rem] leading-relaxed" style="color:var(--ivory-warm)">
+              2/259, Kathadimattam Rd,<br>
+              Balacola, Ooty,<br>
+              Tamil Nadu 643003
+            </address>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: map -->
+      <div class="reveal" data-reveal="">
+        <div class="glass rounded-[2px] overflow-hidden h-full min-h-[440px] flex flex-col">
+          <div class="px-6 py-4 flex items-center justify-between gap-4" style="border-bottom:1px solid rgba(215,220,216,0.1)">
+            <p class="text-[0.6rem] uppercase" style="letter-spacing:0.24em; color:var(--stone)">Location · Balacola, Ooty</p>
+            <a href="https://maps.app.goo.gl/MpvY4LAZejAT4nvh8?g_st=aw" target="_blank" rel="noopener noreferrer" class="link-line text-[0.6rem] uppercase transition-colors duration-500 hover:text-white" style="letter-spacing:0.2em; color:var(--teak-light)" data-cursor="hover">Get Directions</a>
+          </div>
+          <iframe title="Map showing Silverline Resort, Balacola, Ooty" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3913.3765648423967!2d76.67355107507324!3d11.389611688653527!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba89717eb47ffad%3A0xd312338172054e5b!2sSilverline%20Resort!5e0!3m2!1sen!2sin!4v1722876393000!5m2!1sen!2sin" class="w-full flex-1 min-h-[380px]" style="border:0; filter:grayscale(0.34) contrast(1.04) brightness(0.88)" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen=""></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ══════════════════════════════════════════════════════════
+     FOOTER
+     ══════════════════════════════════════════════════════════ -->
+<footer class="relative pt-20 pb-10 overflow-hidden" style="background:var(--charcoal-deep)">
+  <div class="absolute top-0 left-0 w-full h-px" style="background:linear-gradient(90deg, transparent, rgba(215,220,216,0.16), transparent)"></div>
+
+  <div class="mx-auto max-w-[1560px] px-6 md:px-10">
+    <div class="grid md:grid-cols-12 gap-12 mb-16">
+
+      <div class="md:col-span-5 reveal" data-reveal="">
+        <div class="flex items-center gap-3 mb-6">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <path d="M2 17.5L8.2 8l4.1 5.6L15.6 9l6.4 8.5H2z" stroke="var(--teak-light)" stroke-width="0.9" stroke-linejoin="round"></path>
+            <circle cx="17.4" cy="5.6" r="2.1" stroke="var(--ivory)" stroke-width="0.9" opacity="0.75"></circle>
+          </svg>
+          <span class="font-display text-[1.1rem]" style="letter-spacing:0.26em; color:var(--ivory)">SILVERLINE</span>
+        </div>
+        <p class="lede text-[0.92rem] max-w-sm mb-8">
+          A quiet luxury retreat in the Nilgiri hills of Ooty. Seven room categories, breakfast included,
+          and a valley that changes by the hour.
+        </p>
+        <p class="font-display italic text-[1.05rem]" style="color:var(--teak-light)">Experience serenity.</p>
+      </div>
+
+      <div class="md:col-span-3 reveal" data-reveal="">
+        <p class="text-[0.58rem] uppercase mb-6" style="letter-spacing:0.26em; color:var(--stone)">Explore</p>
+        <ul class="space-y-3.5 text-[0.86rem]" style="color:rgba(236,234,227,0.62)">
+          <li><a href="#welcome" class="link-line hover:text-white transition-colors duration-500" data-cursor="hover">Welcome</a></li>
+          <li><a href="#nature" class="link-line hover:text-white transition-colors duration-500" data-cursor="hover">Nature Experience</a></li>
+          <li><a href="#rooms" class="link-line hover:text-white transition-colors duration-500" data-cursor="hover">Rooms &amp; Suites</a></li>
+          <li><a href="#amenities" class="link-line hover:text-white transition-colors duration-500" data-cursor="hover">Amenities</a></li>
+          <li><a href="#gallery" class="link-line hover:text-white transition-colors duration-500" data-cursor="hover">Gallery</a></li>
+          <li><a href="#attractions" class="link-line hover:text-white transition-colors duration-500" data-cursor="hover">Nearby Attractions</a></li>
+          <li><a href="/pages/privacy-policy.html" class="link-line hover:text-white transition-colors duration-500" data-cursor="hover">Privacy Policy</a></li>
+          <li><a href="/pages/terms-and-conditions.html" class="link-line hover:text-white transition-colors duration-500" data-cursor="hover">Terms &amp; Conditions</a></li>
+        </ul>
+      </div>
+
+      <div class="md:col-span-4 reveal" data-reveal="">
+        <p class="text-[0.58rem] uppercase mb-6" style="letter-spacing:0.26em; color:var(--stone)">Contact</p>
+        <a href="tel:+918638479919" class="link-line font-display text-[1.5rem] block mb-6 transition-colors duration-500 hover:text-white" style="color:var(--ivory-warm)" data-cursor="hover">+91 86384 79919</a>
+        <address class="not-italic text-[0.88rem] leading-relaxed mb-8" style="color:rgba(236,234,227,0.62)">
+          2/259, Kathadimattam Rd,<br>
+          Balacola, Ooty,<br>
+          Tamil Nadu 643003, India
+        </address>
+        <div class="flex flex-wrap gap-3">
+          <a href="https://www.agoda.com/en-in/silverline-resort/hotel/ooty-in.html?checkin=2026-08-09&checkout=2026-08-10&los=1&rooms=1&adults=2&children=0&cid=1917615&searchrequestid=b7daa277-a4a4-4791-a8af-9d7327e509de&ds=heCoWcx%2FOsbZVKgL" target="_blank" rel="noopener noreferrer" class="btn btn-ghost !py-3 !px-5 !text-[0.6rem]" data-cursor="hover" data-ripple="">Agoda</a>
+          <a href="https://www.ixigo.com/hotels/3992248/details?locationId=2603820&locationName=Silverline%20Resort&locationType=H&masterLocationId=3024853&countryId=1&checkinDate=06082026&checkoutDate=07082026&adultCount=2&roomCount=1&childCount=0&ab=&cityId=559&stateId=5&searchLocationId=2603820&hotelInfoToken=true%7C2022%7C1&hName=Silverline%20Resort&source=Autocomplete&subsource=Autocomplete&cp=1&cc=&searchId=d894b499-9a4d-48f2-a772-668519e0876b&usid=ecba533a-c3db-475e-9160-f8aab8a7b743" target="_blank" rel="noopener noreferrer" class="btn btn-ghost !py-3 !px-5 !text-[0.6rem]" data-cursor="hover" data-ripple="">ixigo</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4" style="border-top:1px solid rgba(215,220,216,0.08)">
+      <p class="text-[0.68rem]" style="color:rgba(236,234,227,0.34)">
+        © <span id="year">2025</span> Silverline Resort, Ooty. All rights reserved.
+      </p>
+      <p class="text-[0.62rem] uppercase" style="letter-spacing:0.2em; color:rgba(236,234,227,0.28)">
+        Nilgiris · Tamil Nadu · India
+      </p>
+    </div>
+  </div>
+</footer>
+
+<!-- ══════════════════════════════════════════════════════════
+     LIGHTBOX
+     ══════════════════════════════════════════════════════════ -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Gallery viewer">
+  <button id="lb-close" class="absolute top-6 right-6 w-11 h-11 rounded-full glass flex items-center justify-center transition-transform duration-500 hover:rotate-90" aria-label="Close" data-cursor="hover">
+    <svg width="14" height="14" viewBox="0 0 24 24" stroke="var(--ivory)" stroke-width="1.4" fill="none">
+      <path d="M5 5l14 14M19 5L5 19"></path>
+    </svg>
+  </button>
+  <img id="lb-img" class="lb-media object-contain" alt="">
+</div>
+
+<script src="https://cdn.moda.app/runtime-libs/gsap-3.15/gsap.min.js"></script>
+<script src="https://cdn.moda.app/runtime-libs/gsap-3.15/ScrollTrigger.min.js"></script>
+<script src="https://cdn.moda.app/runtime-libs/lenis-1.3.23/lenis.min.js"></script>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.moda.app/runtime-libs/three-0.184.0/three.module.min.js",
+  "three/addons/": "https://cdn.moda.app/runtime-libs/three-0.184.0/addons/"
+}}
+</script>
+
+<script src="/js/main.js"></script>
+<script type="module" src="/js/atmosphere.js"></script>
+
+
+</body></html>
