@@ -3,6 +3,5 @@
 
 User-agent: *
 Allow: /
-Disallow: /pages/
 
 Sitemap: https://www.silverlineresort.in/sitemap.xml
