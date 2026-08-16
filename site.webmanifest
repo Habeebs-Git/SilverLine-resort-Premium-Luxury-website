@@ -1,0 +1,16 @@
+{
+  "name": "Silverline Resort, Ooty",
+  "short_name": "Silverline",
+  "description": "A quiet luxury retreat in the Nilgiri hills — cinematic mountain views, seven room categories, breakfast included. Balacola, Ooty, Tamil Nadu.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#0d1012",
+  "theme_color": "#0d1012",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

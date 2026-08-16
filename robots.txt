@@ -1,0 +1,8 @@
+# robots.txt — Silverline Resort, Ooty
+# https://www.silverlineresort.in/robots.txt
+
+User-agent: *
+Allow: /
+Disallow: /pages/
+
+Sitemap: https://www.silverlineresort.in/sitemap.xml

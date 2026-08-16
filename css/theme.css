@@ -813,6 +813,122 @@ body.cursor-hover #cursor-dot {
   margin-bottom: 0.55rem;
 }
 
+/* ── Google Maps link on the flip-card back face ───────────────────────────
+   The link inherits the heading's colour and weight so it reads as native
+   editorial text — no traditional blue hyperlink appearance.
+
+   State machine:
+     • Before flip  (.attr-maps-link alone):   pointer-events:none — completely
+       inert. Visitors cannot accidentally tap or click it.
+     • After flip   (.is-flipped .attr-maps-link): pointer-events:auto — active.
+       A subtle teak underline sweeps in on hover/focus, matching the site's
+       existing .link-line pattern but using the teak-light accent.
+
+   The map-pin icon (▸ inline SVG via content) appears only when interactive,
+   fading in alongside the hover indicator so the affordance is clear on
+   mobile (which has no hover state) too.
+   ──────────────────────────────────────────────────────────────────────── */
+
+.attr-maps-link {
+  /* Inherit heading typography exactly — must look identical before and after flip */
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  color: inherit;
+  text-decoration: none;
+  display: inline-block;
+  position: relative;
+
+  /* Pre-flip: completely inert — no cursor change, no interaction */
+  pointer-events: none;
+  cursor: default;
+
+  /* Underline track — starts invisible */
+  --_link-underline-opacity: 0;
+  transition: color 0.55s var(--ease-silk);
+}
+
+/* The animated underline sweep — hidden until flipped */
+.attr-maps-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 100%;
+  height: 1px;
+  background: var(--teak-light);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.6s var(--ease-silk), opacity 0.4s var(--ease-silk);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* A very faint map-pin icon appended via pseudo-element — desktop only */
+.attr-maps-link::before {
+  content: "";
+  display: none; /* hidden by default; shown on hover when flipped */
+}
+
+/* ── POST-FLIP STATE: card is flipped, link becomes interactive ─────────── */
+
+.attr-card.is-flipped .attr-maps-link {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* Reveal the underline track (make it visible but still not swept) */
+.attr-card.is-flipped .attr-maps-link::after {
+  opacity: 1;
+}
+
+/* On hover/focus: sweep the underline left-to-right (teak gold) */
+.attr-card.is-flipped .attr-maps-link:hover::after,
+.attr-card.is-flipped .attr-maps-link:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Subtle warm colour shift on hover — premium, not a blue link */
+.attr-card.is-flipped .attr-maps-link:hover,
+.attr-card.is-flipped .attr-maps-link:focus-visible {
+  color: var(--teak-light);
+}
+
+/* Accessibility: keyboard focus ring uses the site's existing convention */
+.attr-card.is-flipped .attr-maps-link:focus-visible {
+  outline: 2px solid var(--teak-light);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+/* Mobile / touch: on touch devices there is no hover, so show the underline
+   track persistently once flipped so the tap target feels clear */
+@media (hover: none), (pointer: coarse) {
+  .attr-card.is-flipped .attr-maps-link::after {
+    transform: scaleX(0.28);
+    transform-origin: left;
+    opacity: 0.55;
+    transition: none;
+  }
+  .attr-card.is-flipped .attr-maps-link:active {
+    color: var(--teak-light);
+  }
+}
+
+/* Reduced motion: disable the underline sweep animation */
+@media (prefers-reduced-motion: reduce) {
+  .attr-maps-link::after {
+    transition: none;
+  }
+  .attr-card.is-flipped .attr-maps-link::after {
+    transform: scaleX(1);
+    opacity: 0.4;
+  }
+}
+
+
 .attr-back-desc {
   font-weight: 300;
   font-size: 0.85rem;
