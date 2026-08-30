@@ -1,0 +1,1167 @@
+# SILVERLINE RESORT — SUPABASE DATABASE BLUEPRINT
+**Based on complete code inspection — READ ONLY — DO NOT EXECUTE**
+**Inspected:** All files in api/, api/_lib/, data/, js/, scripts/, pages/, config files
+
+---
+
+## 1. Executive Summary
+
+The Silverline Resort application uses 7 JSON flat files for persistence. Every single one maps cleanly to a PostgreSQL table with no structural redesign required. The schema is already well-normalised in the code — `reservations` references `guests` by `guestId`, and `payments` references `reservations` by `reservationId`. The only additions needed are:
+
+1. **PostgreSQL ENUM types** for statuses (already well-defined in the code)
+2. **`updated_at` auto-triggers** (the code manually sets `updatedAt` — move this to DB)
+3. **`SELECT FOR UPDATE` transaction pattern** in the booking API to replace the race-prone JSON read/write
+4. **Row Level Security (RLS)** — all tables must be server-side only (Supabase service role key via the API layer, no direct public access)
+5. **`settings` table** — the single JSON object maps best to a JSONB column with a singleton row (`id = 1`)
+
+No additional tables (e.g., `room_inventory`, `rate_plans`, `reservation_rooms`) are required based on the current application code. The existing model uses **room type inventory as a count** (`room_types.inventory INT`) — there are no individual physical room records. This is the correct model for this property size.
+
+---
+
+## 2. Required Tables
+
+Based on actual code inspection of every JSON file and every API endpoint:
+
+| Table | Source File | Purpose |
+|---|---|---|
+| `guests` | data/guests.json | Guest personal records, upserted by email on each booking |
+| `reservations` | data/reservations.json | Core booking records |
+| `payments` | data/payments.json | Payment transaction records linked to reservations |
+| `room_types` | data/room-types.json | Room catalogue with inventory counts and pricing |
+| `users` | data/users.json | Admin/staff login accounts with bcrypt-hashed passwords |
+| `settings` | data/settings.json | Singleton hotel configuration row (JSONB) |
+| `audit_logs` | data/audit-logs.json | Immutable event log, append-only |
+
+**NOT NEEDED** (investigated per your request):
+- `reservation_rooms` — not needed; system uses room type inventory count, not individual room records
+- `room_inventory` — not needed; `room_types.inventory` column is sufficient for this property
+- `room_blocks` — NOT FOUND IN CODE. Would need a business decision if hotel wants to block rooms for maintenance
+- `payment_transactions` — current `payments` table serves this purpose
+- `admin_sessions` — auth is stateless JWT in httpOnly cookie; no server-side session storage required
+- `rate_plans` / `booking_events` — NOT FOUND IN CODE
+
+---
+
+## 3. Complete Column Specification
+
+---
+
+### TABLE: `guests`
+**Purpose:** Guest directory. Created/upserted via `upsertGuest()` on every booking using email as the natural key.
+
+| Column | PostgreSQL Type | Nullable | Default | PK | FK | Description |
+|---|---|---|---|---|---|---|
+| `id` | `UUID` | NOT NULL | `gen_random_uuid()` | ✅ | — | Guest UUID (matches JSON `id`) |
+| `name` | `TEXT` | NOT NULL | — | — | — | Full name, 2–100 chars |
+| `email` | `TEXT` | NOT NULL | — | — | — | Lowercase email, unique key |
+| `phone` | `TEXT` | NOT NULL | — | — | — | 7–20 chars, digits/+/- |
+| `address` | `TEXT` | NULL | `NULL` | — | — | City/State, optional |
+| `notes` | `TEXT` | NULL | `''` | — | — | Admin notes about guest |
+| `created_at` | `TIMESTAMPTZ` | NOT NULL | `now()` | — | — | Record creation time |
+| `updated_at` | `TIMESTAMPTZ` | NOT NULL | `now()` | — | — | Auto-updated by trigger |
+
+**Constraints:**
+- `UNIQUE (email)` — email is the upsert key in `upsertGuest()`
+- `CHECK (char_length(name) >= 2 AND char_length(name) <= 100)`
+- `CHECK (char_length(phone) >= 7 AND char_length(phone) <= 20)`
+
+---
+
+### TABLE: `room_types`
+**Purpose:** Room catalogue. Defines room types, their pricing, inventory count, and capacity. Updated by admin via `PATCH /api/admin/rooms`.
+
+| Column | PostgreSQL Type | Nullable | Default | PK | FK | Description |
+|---|---|---|---|---|---|---|
+| `id` | `TEXT` | NOT NULL | — | ✅ | — | Slug ID e.g. `standard-room` (matches JSON `id`) |
+| `name` | `TEXT` | NOT NULL | — | — | — | Display name |
+| `slug` | `TEXT` | NOT NULL | — | — | — | URL slug (same as id in current data) |
+| `type` | `TEXT` | NOT NULL | — | — | — | Category: standard, deluxe, suite, family |
+| `description` | `TEXT` | NOT NULL | — | — | — | Full description |
+| `short_description` | `TEXT` | NULL | `NULL` | — | — | One-line teaser |
+| `image` | `TEXT` | NOT NULL | — | — | — | Primary image path |
+| `images` | `TEXT[]` | NOT NULL | `'{}'` | — | — | Array of image paths |
+| `image_alt` | `TEXT` | NULL | `NULL` | — | — | Alt text for primary image |
+| `base_price` | `INTEGER` | NOT NULL | — | — | — | Price per night in INR (whole rupees) |
+| `max_adults` | `SMALLINT` | NOT NULL | — | — | — | Max adult guests |
+| `max_children` | `SMALLINT` | NOT NULL | `0` | — | — | Max children |
+| `max_guests` | `SMALLINT` | NOT NULL | — | — | — | Total max guests (adults + children) |
+| `bed_configuration` | `TEXT` | NOT NULL | — | — | — | e.g. "1 King Bed" |
+| `room_size` | `TEXT` | NULL | `NULL` | — | — | e.g. "280 sq ft" |
+| `floor` | `TEXT` | NULL | `NULL` | — | — | e.g. "Ground", "First" |
+| `view` | `TEXT` | NULL | `NULL` | — | — | e.g. "Garden View" |
+| `amenities` | `TEXT[]` | NOT NULL | `'{}'` | — | — | List of amenities |
+| `highlights` | `TEXT[]` | NOT NULL | `'{}'` | — | — | Marketing highlights |
+| `inventory` | `SMALLINT` | NOT NULL | `1` | — | — | Total rooms of this type (e.g. 3) |
+| `active` | `BOOLEAN` | NOT NULL | `true` | — | — | Whether available for booking |
+| `sort_order` | `SMALLINT` | NOT NULL | `0` | — | — | Display order |
+
+**Constraints:**
+- `UNIQUE (slug)`
+- `CHECK (base_price >= 500 AND base_price <= 500000)` — from `api/admin/rooms.js`
+- `CHECK (inventory >= 0 AND inventory <= 100)` — from `api/admin/rooms.js`
+- `CHECK (max_adults >= 1)`
+- `CHECK (max_guests >= max_adults)`
+
+---
+
+### TABLE: `reservations`
+**Purpose:** Core booking records. Created by `POST /api/reservations`. Updated by admin status changes. The most critical table — must support atomic overlap-checking.
+
+| Column | PostgreSQL Type | Nullable | Default | PK | FK | Description |
+|---|---|---|---|---|---|---|
+| `id` | `UUID` | NOT NULL | `gen_random_uuid()` | ✅ | — | Reservation UUID |
+| `booking_reference` | `TEXT` | NOT NULL | — | — | — | Human ref e.g. `SLR-20260829-AH57` |
+| `guest_id` | `UUID` | NOT NULL | — | — | `guests.id` | FK to guest record |
+| `guest_name` | `TEXT` | NOT NULL | — | — | — | Denormalised name (snapshot at booking) |
+| `guest_email` | `TEXT` | NOT NULL | — | — | — | Denormalised email (snapshot at booking) |
+| `guest_phone` | `TEXT` | NOT NULL | — | — | — | Denormalised phone (snapshot at booking) |
+| `room_type_id` | `TEXT` | NOT NULL | — | — | `room_types.id` | FK to room type |
+| `room_type_name` | `TEXT` | NOT NULL | — | — | — | Denormalised name (snapshot at booking) |
+| `check_in` | `DATE` | NOT NULL | — | — | — | Check-in date (YYYY-MM-DD) |
+| `check_out` | `DATE` | NOT NULL | — | — | — | Check-out date (YYYY-MM-DD) |
+| `nights` | `SMALLINT` | NOT NULL | — | — | — | Number of nights |
+| `adults` | `SMALLINT` | NOT NULL | — | — | — | Adult guest count |
+| `children` | `SMALLINT` | NOT NULL | `0` | — | — | Children count |
+| `special_requests` | `TEXT` | NULL | `''` | — | — | Guest special requests (max 500 chars) |
+| `base_price` | `INTEGER` | NOT NULL | — | — | — | Per-night price in INR at booking time |
+| `subtotal` | `INTEGER` | NOT NULL | — | — | — | base_price × nights |
+| `taxes` | `INTEGER` | NOT NULL | — | — | — | Tax amount in INR |
+| `total` | `INTEGER` | NOT NULL | — | — | — | subtotal + taxes |
+| `tax_rate` | `NUMERIC(5,4)` | NOT NULL | `0.1200` | — | — | Tax rate at booking time e.g. 0.12 |
+| `currency` | `CHAR(3)` | NOT NULL | `'INR'` | — | — | ISO currency code |
+| `status` | `reservation_status` | NOT NULL | `'confirmed'` | — | — | See ENUM section |
+| `payment_status` | `payment_status` | NOT NULL | `'pending'` | — | — | See ENUM section |
+| `payment_provider` | `TEXT` | NOT NULL | `'mock'` | — | — | e.g. mock, razorpay, stripe |
+| `payment_reference` | `TEXT` | NULL | `NULL` | — | — | Provider transaction/reference ID |
+| `updated_by` | `UUID` | NULL | `NULL` | — | `users.id` | Admin who last updated (nullable — guest bookings have NULL) |
+| `created_at` | `TIMESTAMPTZ` | NOT NULL | `now()` | — | — | Booking creation time |
+| `updated_at` | `TIMESTAMPTZ` | NOT NULL | `now()` | — | — | Auto-updated by trigger |
+
+**Constraints:**
+- `UNIQUE (booking_reference)`
+- `CHECK (check_out > check_in)`
+- `CHECK (nights >= 1 AND nights <= 30)`
+- `CHECK (adults >= 1 AND adults <= 6)`
+- `CHECK (children >= 0 AND children <= 4)`
+- `CHECK (subtotal = base_price * nights)`
+- `CHECK (total = subtotal + taxes)`
+- `CHECK (base_price >= 500)`
+
+**Why denormalised guest fields?** The current code stores `guestName`, `guestEmail`, `guestPhone` directly on the reservation. This is correct — it's a snapshot of the guest data at booking time. If a guest changes their phone number later, old reservations should still show the original number. Maintain this pattern.
+
+---
+
+### TABLE: `payments`
+**Purpose:** Payment transaction records. Created alongside a reservation in `POST /api/reservations`. One payment per reservation in current design (no partial payments, no refund records in current code).
+
+| Column | PostgreSQL Type | Nullable | Default | PK | FK | Description |
+|---|---|---|---|---|---|---|
+| `id` | `UUID` | NOT NULL | `gen_random_uuid()` | ✅ | — | Payment UUID |
+| `reservation_id` | `UUID` | NOT NULL | — | — | `reservations.id` | FK to reservation |
+| `booking_reference` | `TEXT` | NOT NULL | — | — | — | Denormalised ref for easy lookup |
+| `provider` | `TEXT` | NOT NULL | `'mock'` | — | — | Payment provider: mock, razorpay, stripe |
+| `order_id` | `TEXT` | NULL | `NULL` | — | — | Provider's order ID |
+| `transaction_id` | `TEXT` | NULL | `NULL` | — | — | Provider's transaction/payment ID |
+| `amount` | `INTEGER` | NOT NULL | — | — | — | Amount in paise (INR smallest unit) |
+| `currency` | `CHAR(3)` | NOT NULL | `'INR'` | — | — | ISO currency code |
+| `status` | `payment_status` | NOT NULL | `'pending'` | — | — | See ENUM section |
+| `test_mode` | `BOOLEAN` | NOT NULL | `false` | — | — | True for test/mock transactions |
+| `created_at` | `TIMESTAMPTZ` | NOT NULL | `now()` | — | — | Payment record creation time |
+
+**Note on `amount`:** In `data/payments.json`, amount 672000 = ₹6,720 in paise. The `reservations.total` is in whole rupees (6720). Both are stored correctly — payments stores paise (standard for payment gateways), reservations stores rupees.
+
+---
+
+### TABLE: `users`
+**Purpose:** Admin and staff login accounts. Only writable via `seed.js` script — no admin UI to create users exists in current code. Passwords stored as bcrypt-12 hashes.
+
+| Column | PostgreSQL Type | Nullable | Default | PK | FK | Description |
+|---|---|---|---|---|---|---|
+| `id` | `UUID` | NOT NULL | `gen_random_uuid()` | ✅ | — | User UUID |
+| `name` | `TEXT` | NOT NULL | — | — | — | Display name |
+| `email` | `TEXT` | NOT NULL | — | — | — | Login email, unique |
+| `role` | `user_role` | NOT NULL | — | — | — | See ENUM section |
+| `password_hash` | `TEXT` | NOT NULL | — | — | — | bcrypt hash (cost 12) |
+| `active` | `BOOLEAN` | NOT NULL | `true` | — | — | Whether account is active |
+| `created_at` | `TIMESTAMPTZ` | NOT NULL | `now()` | — | — | Account creation |
+| `updated_at` | `TIMESTAMPTZ` | NOT NULL | `now()` | — | — | Auto-updated by trigger |
+
+**Constraints:**
+- `UNIQUE (email)`
+- `CHECK (char_length(password_hash) >= 50)` — bcrypt hashes are always 60 chars
+
+---
+
+### TABLE: `settings`
+**Purpose:** Singleton hotel configuration. Stored as a nested JSONB object. Currently read by `getSettings()` on every API call. Updated via `PATCH /api/admin/settings`.
+
+| Column | PostgreSQL Type | Nullable | Default | PK | FK | Description |
+|---|---|---|---|---|---|---|
+| `id` | `SMALLINT` | NOT NULL | `1` | ✅ | — | Always 1 (singleton row) |
+| `hotel` | `JSONB` | NOT NULL | `'{}'` | — | — | Hotel name, phone, email, address, check-in/out times, timezone |
+| `pricing` | `JSONB` | NOT NULL | `'{}'` | — | — | taxRate, taxLabel, serviceFee, minNights, maxNights, advanceBookingDays |
+| `notifications` | `JSONB` | NOT NULL | `'{}'` | — | — | emailProvider, smsProvider, sendConfirmation, sendCancellation, sendReminder |
+| `ota` | `JSONB` | NOT NULL | `'{}'` | — | — | provider, agodaUrl, ixigoUrl |
+| `payment` | `JSONB` | NOT NULL | `'{}'` | — | — | provider, supportedMethods, testMode |
+| `updated_at` | `TIMESTAMPTZ` | NOT NULL | `now()` | — | — | Last settings update |
+
+**Why JSONB instead of flat columns?**
+The `settings.json` structure has deeply nested objects (`hotel`, `pricing`, `notifications`, etc.) that the application reads as a whole and partially updates. The admin API does deep-merge updates at the section level. JSONB preserves this exactly and allows the `updateSettings()` function's merge pattern to translate directly to a PostgreSQL `jsonb_set()` or `||` merge operator. Adding a new settings key does not require a schema migration.
+
+**Constraint:**
+- `CHECK (id = 1)` — enforces singleton
+
+---
+
+### TABLE: `audit_logs`
+**Purpose:** Immutable append-only event log. Written by `appendAuditLog()` across all API operations — login, reservation create/update, settings change, room update, logout. Never updated or deleted.
+
+| Column | PostgreSQL Type | Nullable | Default | PK | FK | Description |
+|---|---|---|---|---|---|---|
+| `id` | `BIGSERIAL` | NOT NULL | auto | ✅ | — | Auto-increment integer (not UUID — high volume, sequential) |
+| `user_id` | `UUID` | NULL | `NULL` | — | `users.id` (no FK constraint — see note) | Admin user ID, NULL for guest actions |
+| `action` | `TEXT` | NOT NULL | — | — | — | Event type string (see list below) |
+| `resource` | `TEXT` | NOT NULL | — | — | — | Resource type: reservation, auth, settings, room_type |
+| `resource_id` | `TEXT` | NULL | `NULL` | — | — | ID of affected resource (UUID as text — polymorphic) |
+| `meta` | `JSONB` | NULL | `NULL` | — | — | Event-specific metadata (booking ref, email, IP, etc.) |
+| `timestamp` | `TIMESTAMPTZ` | NOT NULL | `now()` | — | — | When event occurred |
+
+**Why BIGSERIAL not UUID for id?** Audit logs are appended at high frequency. Sequential integer IDs are faster to insert and index for time-based queries.
+
+**Why no FK on `user_id`?** Audit logs are immutable history. If an admin account is deleted, you must not lose the audit trail. Use `NULL` for deleted users, not a FK constraint that would block deletion.
+
+**Why TEXT for `resource_id`?** The resource ID can be a UUID (reservation, guest, user) or a text slug (`room_type`: `standard-room`). Using TEXT avoids type mismatch.
+
+---
+
+## 4. Relationships
+
+```
+users (id)
+  │
+  ├──→ audit_logs (user_id)     [1 user : many log entries, nullable]
+  │
+  └──→ reservations (updated_by)  [1 user : many reservations, nullable — admin updates]
+
+guests (id)
+  │
+  └──→ reservations (guest_id)   [1 guest : many reservations]
+          │
+          └──→ payments (reservation_id)   [1 reservation : 1 payment (current design)]
+
+room_types (id)
+  │
+  └──→ reservations (room_type_id)  [1 room_type : many reservations]
+
+settings  [standalone singleton — no FK relationships]
+audit_logs [standalone append-only — soft FK on user_id only]
+```
+
+### Relationship Detail
+
+| Parent | Child | FK Column | Cardinality | ON DELETE | Why |
+|---|---|---|---|---|---|
+| `guests` | `reservations` | `guest_id` | 1:many | `RESTRICT` | Can't delete guest with bookings |
+| `room_types` | `reservations` | `room_type_id` | 1:many | `RESTRICT` | Can't delete room type with history |
+| `users` | `reservations` | `updated_by` | 1:many | `SET NULL` | Admin deletion shouldn't erase reservation history |
+| `reservations` | `payments` | `reservation_id` | 1:1 (current) | `CASCADE` | Payment meaningless without reservation |
+
+---
+
+## 5. Existing JSON → Database Field Mapping
+
+### data/guests.json → `guests` table
+
+| JSON Field | JSON Type | Example | PostgreSQL Column | PG Type | Notes |
+|---|---|---|---|---|---|
+| `id` | string (UUID) | `"06c29f22-..."` | `id` | UUID | Primary key |
+| `name` | string | `"Arjun Mehta"` | `name` | TEXT | |
+| `email` | string | `"arjun@example.com"` | `email` | TEXT | Unique, lowercase |
+| `phone` | string | `"+919876543210"` | `phone` | TEXT | |
+| `address` | string | `"Mumbai, Maharashtra"` | `address` | TEXT | Optional |
+| `notes` | string | `"Prefers high floor"` | `notes` | TEXT | Optional |
+| `createdAt` | ISO string | `"2026-08-11T18:08..."` | `created_at` | TIMESTAMPTZ | |
+| `updatedAt` | ISO string (optional) | `"2026-08-28T..."` | `updated_at` | TIMESTAMPTZ | Via trigger |
+
+---
+
+### data/reservations.json → `reservations` table
+
+| JSON Field | JSON Type | Example | PostgreSQL Column | PG Type | Notes |
+|---|---|---|---|---|---|
+| `id` | string (UUID) | `"c52a5691-..."` | `id` | UUID | PK |
+| `bookingReference` | string | `"SLR-20260826-AH57"` | `booking_reference` | TEXT | UNIQUE |
+| `guestId` | string (UUID) | `"06c29f22-..."` | `guest_id` | UUID | FK → guests.id |
+| `guestName` | string | `"Arjun Mehta"` | `guest_name` | TEXT | Denormalised snapshot |
+| `guestEmail` | string | `"arjun@example.com"` | `guest_email` | TEXT | Denormalised snapshot |
+| `guestPhone` | string | `"+919876543210"` | `guest_phone` | TEXT | Denormalised snapshot |
+| `roomTypeId` | string | `"suite-with-balcony"` | `room_type_id` | TEXT | FK → room_types.id |
+| `roomTypeName` | string | `"Suite with Balcony"` | `room_type_name` | TEXT | Denormalised snapshot |
+| `checkIn` | string (date) | `"2026-08-24"` | `check_in` | DATE | |
+| `checkOut` | string (date) | `"2026-08-27"` | `check_out` | DATE | |
+| `nights` | number | `3` | `nights` | SMALLINT | |
+| `adults` | number | `2` | `adults` | SMALLINT | |
+| `children` | number | `0` | `children` | SMALLINT | |
+| `specialRequests` | string | `"Flowers in room"` | `special_requests` | TEXT | |
+| `basePrice` | number | `4000` | `base_price` | INTEGER | In whole rupees |
+| `subtotal` | number | `12000` | `subtotal` | INTEGER | In whole rupees |
+| `taxes` | number | `1440` | `taxes` | INTEGER | In whole rupees |
+| `total` | number | `13440` | `total` | INTEGER | In whole rupees |
+| `taxRate` | number | `0.12` | `tax_rate` | NUMERIC(5,4) | Optional in old seed data, required in new |
+| `currency` | string | `"INR"` | `currency` | CHAR(3) | |
+| `status` | string | `"checked-in"` | `status` | reservation_status | ENUM |
+| `paymentStatus` | string | `"paid"` | `payment_status` | payment_status | ENUM |
+| `paymentProvider` | string | `"mock"` | `payment_provider` | TEXT | |
+| `paymentReference` | string | `"MOCK-PAY-X0LM"` | `payment_reference` | TEXT | |
+| `createdAt` | ISO string | `"2026-08-21T18:08..."` | `created_at` | TIMESTAMPTZ | |
+| `updatedAt` | ISO string | `"2026-08-25T18:08..."` | `updated_at` | TIMESTAMPTZ | Via trigger |
+| *(not in JSON)* | — | — | `updated_by` | UUID | Added for admin tracking |
+
+---
+
+### data/payments.json → `payments` table
+
+| JSON Field | JSON Type | Example | PostgreSQL Column | PG Type | Notes |
+|---|---|---|---|---|---|
+| `id` | string (UUID) | `"1abf48fb-..."` | `id` | UUID | PK |
+| `reservationId` | string (UUID) | `"4453add0-..."` | `reservation_id` | UUID | FK → reservations.id |
+| `bookingReference` | string | `"SLR-20260828-6UEY"` | `booking_reference` | TEXT | Denormalised |
+| `provider` | string | `"mock"` | `provider` | TEXT | |
+| `orderId` | string | `"MOCK-ORDER-5D15..."` | `order_id` | TEXT | |
+| `transactionId` | string | `"MOCK-CLIENT-..."` | `transaction_id` | TEXT | |
+| `amount` | number | `672000` | `amount` | INTEGER | **In paise** |
+| `currency` | string | `"INR"` | `currency` | CHAR(3) | |
+| `status` | string | `"captured"` | `status` | payment_status | ENUM |
+| `testMode` | boolean | `true` | `test_mode` | BOOLEAN | |
+| `createdAt` | ISO string | `"2026-08-28T10:17..."` | `created_at` | TIMESTAMPTZ | |
+
+---
+
+### data/room-types.json → `room_types` table
+
+| JSON Field | JSON Type | Example | PostgreSQL Column | PG Type | Notes |
+|---|---|---|---|---|---|
+| `id` | string | `"standard-room"` | `id` | TEXT | PK (text slug) |
+| `name` | string | `"Standard Room"` | `name` | TEXT | |
+| `slug` | string | `"standard-room"` | `slug` | TEXT | UNIQUE |
+| `type` | string | `"standard"` | `type` | TEXT | |
+| `description` | string | `"A comfortable..."` | `description` | TEXT | |
+| `shortDescription` | string | `"Warm teak..."` | `short_description` | TEXT | |
+| `image` | string | `"/images/room-..."` | `image` | TEXT | |
+| `images` | array | `["/images/..."]` | `images` | TEXT[] | |
+| `imageAlt` | string | `"Standard Room..."` | `image_alt` | TEXT | |
+| `basePrice` | number | `3000` | `base_price` | INTEGER | |
+| `maxAdults` | number | `2` | `max_adults` | SMALLINT | |
+| `maxChildren` | number | `0` | `max_children` | SMALLINT | |
+| `maxGuests` | number | `2` | `max_guests` | SMALLINT | |
+| `bedConfiguration` | string | `"1 King Bed"` | `bed_configuration` | TEXT | |
+| `roomSize` | string | `"280 sq ft"` | `room_size` | TEXT | |
+| `floor` | string | `"Ground"` | `floor` | TEXT | |
+| `view` | string | `"Garden View"` | `view` | TEXT | |
+| `amenities` | array | `["Free Breakfast",...]` | `amenities` | TEXT[] | |
+| `highlights` | array | `["Garden-facing..."]` | `highlights` | TEXT[] | |
+| `inventory` | number | `3` | `inventory` | SMALLINT | |
+| `active` | boolean | `true` | `active` | BOOLEAN | |
+| `sortOrder` | number | `1` | `sort_order` | SMALLINT | |
+
+---
+
+### data/users.json → `users` table
+
+| JSON Field | JSON Type | Example | PostgreSQL Column | PG Type | Notes |
+|---|---|---|---|---|---|
+| `id` | string (UUID) | `"dac60336-..."` | `id` | UUID | PK |
+| `name` | string | `"Resort Administrator"` | `name` | TEXT | |
+| `email` | string | `"admin@silverlineresort.in"` | `email` | TEXT | UNIQUE |
+| `role` | string | `"admin"` | `role` | user_role | ENUM |
+| `passwordHash` | string | `"$2a$12$Fx..."` | `password_hash` | TEXT | bcrypt-12 |
+| `active` | boolean | `true` | `active` | BOOLEAN | |
+| `createdAt` | ISO string | `"2026-08-26T18:08..."` | `created_at` | TIMESTAMPTZ | |
+| `updatedAt` | ISO string | `"2026-08-26T18:08..."` | `updated_at` | TIMESTAMPTZ | Via trigger |
+
+---
+
+### data/settings.json → `settings` table
+
+| JSON Structure | PostgreSQL Mapping |
+|---|---|
+| `{ "hotel": {...} }` | `hotel JSONB` column |
+| `{ "pricing": {...} }` | `pricing JSONB` column |
+| `{ "notifications": {...} }` | `notifications JSONB` column |
+| `{ "ota": {...} }` | `ota JSONB` column |
+| `{ "payment": {...} }` | `payment JSONB` column |
+| Single document | Single row with `id = 1` |
+
+The application's `updateSettings()` does a deep one-level merge. In PostgreSQL this becomes:
+```sql
+UPDATE settings SET hotel = hotel || $1::jsonb WHERE id = 1;
+```
+
+---
+
+### data/audit-logs.json → `audit_logs` table
+
+| JSON Field | JSON Type | Example | PostgreSQL Column | PG Type | Notes |
+|---|---|---|---|---|---|
+| `userId` | string/null | `"dac60336-..."` / `null` | `user_id` | UUID | Nullable |
+| `action` | string | `"RESERVATION_CREATED"` | `action` | TEXT | |
+| `resource` | string | `"reservation"` | `resource` | TEXT | |
+| `resourceId` | string/null | `"4453add0-..."` | `resource_id` | TEXT | Nullable, polymorphic |
+| `meta` | object | `{ bookingReference: ...}` | `meta` | JSONB | |
+| `timestamp` | ISO string | `"2026-08-28T10:17..."` | `timestamp` | TIMESTAMPTZ | |
+
+---
+
+## 6. Statuses and Enums
+
+### `reservation_status` — Found in: `api/admin/reservations/[id].js`, `js/admin/reservations.js`, `api/_lib/availability.js`
+
+**Actual values found in code:**
+- `confirmed` — default status on booking creation
+- `checked-in` — guest has arrived
+- `checked-out` — guest has departed
+- `cancelled` — booking cancelled by admin
+- `no-show` — guest did not arrive
+- `pending` — pre-payment state (referenced but not actively used in booking flow)
+
+**Recommendation: PostgreSQL ENUM**
+```sql
+CREATE TYPE reservation_status AS ENUM (
+  'pending', 'confirmed', 'checked-in', 'checked-out', 'cancelled', 'no-show'
+);
+```
+Rationale: These values are a closed set, enforced with hardcoded checks in `ALLOWED_STATUSES` in the API. ENUM provides storage efficiency, constraint enforcement, and makes invalid status values impossible at DB level. If new statuses are needed later, `ALTER TYPE ... ADD VALUE` is non-destructive.
+
+---
+
+### `payment_status` — Found in: `api/reservations.js`, `data/payments.json`, `api/admin/dashboard.js`
+
+**Actual values found in code:**
+- `pending` — before payment
+- `paid` — payment captured
+- `captured` — Razorpay terminology for successful capture (same as paid for current mock)
+- `failed` — NOT FOUND IN CODE but implied by payment flow
+- `refunded` — NOT FOUND IN CODE but `refundPayment()` exists in `payment-mock.js`
+
+**Recommendation: PostgreSQL ENUM**
+```sql
+CREATE TYPE payment_status AS ENUM (
+  'pending', 'paid', 'captured', 'failed', 'refunded'
+);
+```
+Note: `paid` and `captured` are both used. In the current mock, `reservations.paymentStatus = 'paid'` while `payments.status = 'captured'`. Keep both values in the enum to support both tables without confusion.
+
+---
+
+### `user_role` — Found in: `api/_lib/auth.js`, `data/users.json`, `api/auth/login.js`, `scripts/seed.js`
+
+**Actual values found in code:**
+- `admin` — full access: can cancel paid reservations, update rooms, change settings
+- `staff` — limited access: can view/search reservations and guests, cannot cancel paid reservations or change settings
+
+**Recommendation: PostgreSQL ENUM**
+```sql
+CREATE TYPE user_role AS ENUM ('admin', 'staff');
+```
+Rationale: Only 2 roles defined in entire codebase. Closed set. ENUM is appropriate.
+
+---
+
+## 7. Indexes
+
+| Index | Table | Columns | Type | Why Needed |
+|---|---|---|---|---|
+| `idx_reservations_room_type_dates` | `reservations` | `(room_type_id, check_in, check_out)` | B-tree | **Critical** — the availability overlap query uses all 3 columns in every booking check |
+| `idx_reservations_status` | `reservations` | `(status)` | B-tree | Admin filters by status constantly; dashboard filters `['cancelled','no-show']` |
+| `idx_reservations_guest_id` | `reservations` | `(guest_id)` | B-tree | `api/admin/guests.js` joins reservations to guests |
+| `idx_reservations_guest_email` | `reservations` | `(guest_email)` | B-tree | Guest lookup also matches by email (fallback in `api/admin/guests.js` line 37) |
+| `idx_reservations_check_in` | `reservations` | `(check_in)` | B-tree | Calendar view, arrivals-today query |
+| `idx_reservations_check_out` | `reservations` | `(check_out)` | B-tree | Calendar view, departures-today query |
+| `idx_reservations_created_at` | `reservations` | `(created_at DESC)` | B-tree | Admin list sorted by created_at DESC, revenue queries |
+| `idx_guests_email` | `guests` | `(email)` | B-tree | `upsertGuest()` looks up by email on every booking (already covered by UNIQUE) |
+| `idx_payments_reservation_id` | `payments` | `(reservation_id)` | B-tree | FK lookup (auto-created with FK usually, but explicit is safer) |
+| `idx_audit_logs_timestamp` | `audit_logs` | `(timestamp DESC)` | B-tree | Log viewing always ordered by time |
+| `idx_audit_logs_user_id` | `audit_logs` | `(user_id)` | B-tree | Filter logs by admin user |
+| `idx_audit_logs_action` | `audit_logs` | `(action)` | B-tree | Filter by event type (LOGIN_FAILED, RESERVATION_CREATED, etc.) |
+| `idx_room_types_active` | `room_types` | `(active)` | Partial B-tree `WHERE active = true` | Every availability query filters `active = true` |
+| `idx_users_email` | `users` | `(email)` | B-tree | Login lookup by email (already covered by UNIQUE) |
+
+---
+
+## 8. Constraints Summary
+
+| Table | Constraint | Type | Purpose |
+|---|---|---|---|
+| `guests` | `UNIQUE (email)` | UNIQUE | Upsert key for `upsertGuest()` |
+| `room_types` | `UNIQUE (slug)` | UNIQUE | URL routing |
+| `room_types` | `CHECK (base_price BETWEEN 500 AND 500000)` | CHECK | Admin validation boundary |
+| `room_types` | `CHECK (inventory BETWEEN 0 AND 100)` | CHECK | Admin validation boundary |
+| `reservations` | `UNIQUE (booking_reference)` | UNIQUE | SLR- references must be unique |
+| `reservations` | `CHECK (check_out > check_in)` | CHECK | Business rule |
+| `reservations` | `CHECK (nights BETWEEN 1 AND 30)` | CHECK | From validation.js |
+| `reservations` | `CHECK (adults BETWEEN 1 AND 6)` | CHECK | From validation.js |
+| `reservations` | `CHECK (total = subtotal + taxes)` | CHECK | Pricing integrity |
+| `users` | `UNIQUE (email)` | UNIQUE | Login uniqueness |
+| `settings` | `CHECK (id = 1)` | CHECK | Singleton enforcement |
+
+---
+
+## 9. Double-Booking Protection
+
+### Current Problem (JSON File System)
+The current code does:
+1. `readJson('reservations.json')` → count overlaps
+2. If available → `writeJson('reservations.json', newReservation)`
+
+Between steps 1 and 2, another concurrent request can read the same state, both see "available", both write — creating a double booking.
+
+### Why This Is Dangerous for Production
+The `countOverlappingBookings()` function in `api/_lib/availability.js` uses the formula:
+```
+ci < ro && co > ri   (where ci/co = new checkIn/checkOut, ri/ro = existing checkIn/checkOut)
+```
+This logic is **correct**. The problem is not the logic — it's the non-atomic storage.
+
+### Recommended Production Solution: PostgreSQL Transaction + SELECT FOR UPDATE + Count Validation
+
+**Pattern to use in the new `api/reservations.js`:**
+
+```sql
+-- All of this runs inside a single transaction
+BEGIN;
+
+-- Step 1: Lock the room_types row to serialize concurrent bookings for this room type
+SELECT inventory FROM room_types
+WHERE id = $roomTypeId AND active = true
+FOR UPDATE;
+
+-- Step 2: Count existing overlapping reservations (within the same transaction)
+SELECT COUNT(*) AS booked
+FROM reservations
+WHERE room_type_id = $roomTypeId
+  AND status NOT IN ('cancelled', 'no-show')
+  AND check_in  < $checkOut::date
+  AND check_out > $checkIn::date;
+
+-- Step 3: Application checks: if booked >= inventory → ROLLBACK and return 409
+-- Step 4: If available → INSERT reservation + INSERT payment
+
+COMMIT;
+```
+
+**Why `SELECT FOR UPDATE` on `room_types`?**
+- It places a row-level exclusive lock on the specific room type row
+- Any second concurrent transaction trying to `SELECT FOR UPDATE` the same row will **block** until the first transaction commits or rolls back
+- This serialises concurrent bookings for the same room type
+- Bookings for different room types proceed independently (no global lock)
+
+**Why not PostgreSQL exclusion constraints?**
+An exclusion constraint using `tsrange` (timestamp range type) would be ideal if inventory was 1 unit per room. But this property has 2–3 units per room type (e.g., `standard-room` has inventory 3). An exclusion constraint would prevent ANY overlap for the same room_type_id, which is too restrictive. The `SELECT FOR UPDATE + COUNT` pattern handles the inventory count correctly.
+
+**Why not application-level Redis locks?**
+That would add infrastructure complexity (Redis) that is not present in the current stack. PostgreSQL transactions are sufficient and the correct tool here.
+
+**Summary of architecture change for booking atomicity:**
+- Use `@supabase/supabase-js` with `rpc()` to call a PostgreSQL function that runs the entire booking as a single transaction
+- Or use Supabase's `pg` connection with explicit `BEGIN/COMMIT`
+- The `api/reservations.js` file becomes the only place that calls this transaction
+- The `validateFinalAvailability()` function in `api/_lib/availability.js` is replaced by the SQL count inside the transaction
+
+---
+
+## 10. Supabase RLS / Security
+
+### The Security Model
+
+The application is a **server-side rendered + serverless API** system. All data access goes through Vercel serverless functions (`api/*.js`) using the **Supabase service role key**. The browser never talks to Supabase directly.
+
+```
+Browser → Vercel API (api/reservations.js) → Supabase (service_role key)
+```
+
+### RLS Configuration
+
+| Table | RLS Enabled | Public SELECT | Public INSERT | Public UPDATE | Public DELETE | Reasoning |
+|---|---|---|---|---|---|---|
+| `guests` | ✅ YES | ❌ NO | ❌ NO | ❌ NO | ❌ NO | PII — server-side only |
+| `room_types` | ✅ YES | ✅ YES (active only) | ❌ NO | ❌ NO | ❌ NO | Room catalogue is public data |
+| `reservations` | ✅ YES | ❌ NO | ❌ NO | ❌ NO | ❌ NO | Booking data — server-side only |
+| `payments` | ✅ YES | ❌ NO | ❌ NO | ❌ NO | ❌ NO | Payment data — server-side only |
+| `users` | ✅ YES | ❌ NO | ❌ NO | ❌ NO | ❌ NO | Auth — server-side only |
+| `settings` | ✅ YES | ✅ YES (pricing/hotel only) | ❌ NO | ❌ NO | ❌ NO | Hotel name/check-in times are public info |
+| `audit_logs` | ✅ YES | ❌ NO | ❌ NO | ❌ NO | ❌ NO | Internal only |
+
+### Access Pattern
+
+```sql
+-- Most tables: deny all public access
+CREATE POLICY "deny_public_access"
+  ON reservations FOR ALL
+  TO anon, authenticated
+  USING (false);
+
+-- room_types: allow public to read active rooms only
+CREATE POLICY "public_read_active_rooms"
+  ON room_types FOR SELECT
+  TO anon
+  USING (active = true);
+
+-- All data access from API goes through service_role key
+-- Service role bypasses ALL RLS policies
+-- NEVER expose the service_role key to frontend JavaScript
+```
+
+### Key Points
+- **`SUPABASE_SERVICE_ROLE_KEY`** — only used in Vercel serverless functions (server environment). NEVER in frontend JS.
+- **`SUPABASE_ANON_KEY`** — safe for frontend, but since all API calls go through serverless functions, the anon key is not needed in frontend at all.
+- The admin JWT authentication continues to be handled by `api/_lib/auth.js` (application layer) — Supabase Auth is NOT being used. The existing bcrypt + JWT system is kept as-is.
+
+---
+
+## 11. SQL Migration Script
+
+> **DO NOT EXECUTE THIS SCRIPT. Review carefully before running.**
+
+```sql
+-- ============================================================
+-- SILVERLINE RESORT — Supabase PostgreSQL Migration Script
+-- Version: 1.0
+-- Based on: Complete code inspection of all project files
+-- DO NOT EXECUTE WITHOUT REVIEW
+-- ============================================================
+
+-- Enable required extensions
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";  -- for gen_random_uuid()
+
+-- ============================================================
+-- ENUMS
+-- ============================================================
+
+CREATE TYPE reservation_status AS ENUM (
+  'pending',
+  'confirmed',
+  'checked-in',
+  'checked-out',
+  'cancelled',
+  'no-show'
+);
+
+CREATE TYPE payment_status AS ENUM (
+  'pending',
+  'paid',
+  'captured',
+  'failed',
+  'refunded'
+);
+
+CREATE TYPE user_role AS ENUM (
+  'admin',
+  'staff'
+);
+
+-- ============================================================
+-- TABLE: guests
+-- ============================================================
+
+CREATE TABLE guests (
+  id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  name         TEXT        NOT NULL CHECK (char_length(name) BETWEEN 2 AND 100),
+  email        TEXT        NOT NULL CHECK (char_length(email) <= 254),
+  phone        TEXT        NOT NULL CHECK (char_length(phone) BETWEEN 7 AND 20),
+  address      TEXT,
+  notes        TEXT        NOT NULL DEFAULT '',
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  CONSTRAINT guests_email_unique UNIQUE (email)
+);
+
+CREATE INDEX idx_guests_email ON guests (email);
+
+-- ============================================================
+-- TABLE: room_types
+-- ============================================================
+
+CREATE TABLE room_types (
+  id                 TEXT        PRIMARY KEY,
+  name               TEXT        NOT NULL,
+  slug               TEXT        NOT NULL,
+  type               TEXT        NOT NULL,
+  description        TEXT        NOT NULL DEFAULT '',
+  short_description  TEXT,
+  image              TEXT        NOT NULL DEFAULT '',
+  images             TEXT[]      NOT NULL DEFAULT '{}',
+  image_alt          TEXT,
+  base_price         INTEGER     NOT NULL CHECK (base_price BETWEEN 500 AND 500000),
+  max_adults         SMALLINT    NOT NULL CHECK (max_adults >= 1),
+  max_children       SMALLINT    NOT NULL DEFAULT 0 CHECK (max_children >= 0),
+  max_guests         SMALLINT    NOT NULL CHECK (max_guests >= 1),
+  bed_configuration  TEXT        NOT NULL DEFAULT '',
+  room_size          TEXT,
+  floor              TEXT,
+  view               TEXT,
+  amenities          TEXT[]      NOT NULL DEFAULT '{}',
+  highlights         TEXT[]      NOT NULL DEFAULT '{}',
+  inventory          SMALLINT    NOT NULL DEFAULT 1 CHECK (inventory BETWEEN 0 AND 100),
+  active             BOOLEAN     NOT NULL DEFAULT true,
+  sort_order         SMALLINT    NOT NULL DEFAULT 0,
+
+  CONSTRAINT room_types_slug_unique UNIQUE (slug),
+  CONSTRAINT room_types_capacity CHECK (max_guests >= max_adults)
+);
+
+CREATE INDEX idx_room_types_active ON room_types (active) WHERE active = true;
+
+-- ============================================================
+-- TABLE: users
+-- ============================================================
+
+CREATE TABLE users (
+  id             UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  name           TEXT        NOT NULL CHECK (char_length(name) BETWEEN 2 AND 100),
+  email          TEXT        NOT NULL CHECK (char_length(email) <= 254),
+  role           user_role   NOT NULL,
+  password_hash  TEXT        NOT NULL CHECK (char_length(password_hash) >= 50),
+  active         BOOLEAN     NOT NULL DEFAULT true,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  CONSTRAINT users_email_unique UNIQUE (email)
+);
+
+CREATE INDEX idx_users_email ON users (email);
+
+-- ============================================================
+-- TABLE: reservations
+-- ============================================================
+
+CREATE TABLE reservations (
+  id                 UUID                PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_reference  TEXT                NOT NULL,
+  guest_id           UUID                NOT NULL REFERENCES guests(id) ON DELETE RESTRICT,
+  guest_name         TEXT                NOT NULL,
+  guest_email        TEXT                NOT NULL,
+  guest_phone        TEXT                NOT NULL,
+  room_type_id       TEXT                NOT NULL REFERENCES room_types(id) ON DELETE RESTRICT,
+  room_type_name     TEXT                NOT NULL,
+  check_in           DATE                NOT NULL,
+  check_out          DATE                NOT NULL,
+  nights             SMALLINT            NOT NULL CHECK (nights BETWEEN 1 AND 30),
+  adults             SMALLINT            NOT NULL CHECK (adults BETWEEN 1 AND 6),
+  children           SMALLINT            NOT NULL DEFAULT 0 CHECK (children BETWEEN 0 AND 4),
+  special_requests   TEXT                NOT NULL DEFAULT '',
+  base_price         INTEGER             NOT NULL CHECK (base_price >= 500),
+  subtotal           INTEGER             NOT NULL,
+  taxes              INTEGER             NOT NULL DEFAULT 0,
+  total              INTEGER             NOT NULL,
+  tax_rate           NUMERIC(5,4)        NOT NULL DEFAULT 0.1200,
+  currency           CHAR(3)             NOT NULL DEFAULT 'INR',
+  status             reservation_status  NOT NULL DEFAULT 'confirmed',
+  payment_status     payment_status      NOT NULL DEFAULT 'pending',
+  payment_provider   TEXT                NOT NULL DEFAULT 'mock',
+  payment_reference  TEXT,
+  updated_by         UUID                REFERENCES users(id) ON DELETE SET NULL,
+  created_at         TIMESTAMPTZ         NOT NULL DEFAULT now(),
+  updated_at         TIMESTAMPTZ         NOT NULL DEFAULT now(),
+
+  CONSTRAINT reservations_booking_ref_unique UNIQUE (booking_reference),
+  CONSTRAINT reservations_dates_valid CHECK (check_out > check_in),
+  CONSTRAINT reservations_pricing_valid CHECK (total = subtotal + taxes)
+);
+
+CREATE INDEX idx_reservations_room_type_dates ON reservations (room_type_id, check_in, check_out);
+CREATE INDEX idx_reservations_status          ON reservations (status);
+CREATE INDEX idx_reservations_guest_id        ON reservations (guest_id);
+CREATE INDEX idx_reservations_guest_email     ON reservations (guest_email);
+CREATE INDEX idx_reservations_check_in        ON reservations (check_in);
+CREATE INDEX idx_reservations_check_out       ON reservations (check_out);
+CREATE INDEX idx_reservations_created_at      ON reservations (created_at DESC);
+
+-- ============================================================
+-- TABLE: payments
+-- ============================================================
+
+CREATE TABLE payments (
+  id                 UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
+  reservation_id     UUID            NOT NULL REFERENCES reservations(id) ON DELETE CASCADE,
+  booking_reference  TEXT            NOT NULL,
+  provider           TEXT            NOT NULL DEFAULT 'mock',
+  order_id           TEXT,
+  transaction_id     TEXT,
+  amount             INTEGER         NOT NULL CHECK (amount >= 0),  -- in paise
+  currency           CHAR(3)         NOT NULL DEFAULT 'INR',
+  status             payment_status  NOT NULL DEFAULT 'pending',
+  test_mode          BOOLEAN         NOT NULL DEFAULT false,
+  created_at         TIMESTAMPTZ     NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_payments_reservation_id ON payments (reservation_id);
+
+-- ============================================================
+-- TABLE: settings (singleton)
+-- ============================================================
+
+CREATE TABLE settings (
+  id             SMALLINT    PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+  hotel          JSONB       NOT NULL DEFAULT '{}',
+  pricing        JSONB       NOT NULL DEFAULT '{}',
+  notifications  JSONB       NOT NULL DEFAULT '{}',
+  ota            JSONB       NOT NULL DEFAULT '{}',
+  payment        JSONB       NOT NULL DEFAULT '{}',
+  updated_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ============================================================
+-- TABLE: audit_logs
+-- ============================================================
+
+CREATE TABLE audit_logs (
+  id           BIGSERIAL   PRIMARY KEY,
+  user_id      UUID,       -- no FK constraint (immutable history)
+  action       TEXT        NOT NULL,
+  resource     TEXT        NOT NULL,
+  resource_id  TEXT,
+  meta         JSONB,
+  timestamp    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_audit_logs_timestamp ON audit_logs (timestamp DESC);
+CREATE INDEX idx_audit_logs_user_id   ON audit_logs (user_id);
+CREATE INDEX idx_audit_logs_action    ON audit_logs (action);
+
+-- ============================================================
+-- AUTO-UPDATE TRIGGERS (for updated_at columns)
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER guests_updated_at
+  BEFORE UPDATE ON guests
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER room_types_updated_at
+  BEFORE UPDATE ON room_types
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER users_updated_at
+  BEFORE UPDATE ON users
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER reservations_updated_at
+  BEFORE UPDATE ON reservations
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER settings_updated_at
+  BEFORE UPDATE ON settings
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================================
+-- ROW LEVEL SECURITY
+-- ============================================================
+
+-- Enable RLS on all tables
+ALTER TABLE guests        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE room_types    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reservations  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payments      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE settings      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_logs    ENABLE ROW LEVEL SECURITY;
+
+-- Deny all access from anon/authenticated (browser-facing) roles
+-- All access goes through service_role (Vercel API functions)
+
+CREATE POLICY "no_public_access_guests"
+  ON guests FOR ALL TO anon, authenticated USING (false);
+
+CREATE POLICY "no_public_access_reservations"
+  ON reservations FOR ALL TO anon, authenticated USING (false);
+
+CREATE POLICY "no_public_access_payments"
+  ON payments FOR ALL TO anon, authenticated USING (false);
+
+CREATE POLICY "no_public_access_users"
+  ON users FOR ALL TO anon, authenticated USING (false);
+
+CREATE POLICY "no_public_access_audit_logs"
+  ON audit_logs FOR ALL TO anon, authenticated USING (false);
+
+-- room_types: allow public to read active rooms (for booking page)
+-- Writes are server-side only via service_role
+CREATE POLICY "public_read_active_rooms"
+  ON room_types FOR SELECT TO anon, authenticated
+  USING (active = true);
+
+-- settings: allow public to read hotel and pricing info only
+-- (hotel name, check-in time, currency — used by booking page)
+CREATE POLICY "public_read_settings"
+  ON settings FOR SELECT TO anon, authenticated
+  USING (true);
+-- Note: Frontend should only expose settings.hotel and settings.pricing
+-- The API strips ota, payment, notifications before responding to clients
+
+-- ============================================================
+-- SEED SETTINGS (initial data for production)
+-- ============================================================
+
+INSERT INTO settings (id, hotel, pricing, notifications, ota, payment)
+VALUES (
+  1,
+  '{"name":"Silverline Resort","tagline":"Experience Serenity in the Heart of the Nilgiris","address":"2/259, Kathadimattam Road, Balacola, Ooty, Tamil Nadu 643003","phone":"+918638479919","email":"info@silverlineresort.in","reservationsEmail":"reservations@silverlineresort.in","website":"https://www.silverlineresort.in","checkInTime":"14:00","checkOutTime":"11:00","currency":"INR","currencySymbol":"₹","timezone":"Asia/Kolkata"}'::jsonb,
+  '{"taxRate":0.12,"taxLabel":"GST (12%)","serviceFee":0,"breakfastIncluded":true,"breakfastLabel":"Breakfast Included","cancellationPolicy":"Free cancellation up to 48 hours before check-in. After that, 1 night charge applies.","advanceBookingDays":365,"minNights":1,"maxNights":30}'::jsonb,
+  '{"emailProvider":"mock","smsProvider":"none","sendConfirmation":true,"sendCancellation":true,"sendReminder":false}'::jsonb,
+  '{"provider":"mock","agodaUrl":"https://www.agoda.com/en-in/silverline-resort/hotel/ooty-in.html?rooms=1&adults=2&children=0&cid=1917615","ixigoUrl":"https://www.ixigo.com/hotels/3992248/details?locationId=2603820&locationName=Silverline%20Resort&locationType=H&masterLocationId=3024853&countryId=1&adultCount=2&roomCount=1&childCount=0&cityId=559&stateId=5&hName=Silverline%20Resort"}'::jsonb,
+  '{"provider":"mock","supportedMethods":["card","upi","netbanking"],"testMode":true}'::jsonb
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================
+-- BOOKING ATOMIC FUNCTION (replaces validateFinalAvailability)
+-- Use this via supabase.rpc() from api/reservations.js
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION create_reservation_atomic(
+  p_id                UUID,
+  p_booking_reference TEXT,
+  p_guest_id          UUID,
+  p_guest_name        TEXT,
+  p_guest_email       TEXT,
+  p_guest_phone       TEXT,
+  p_room_type_id      TEXT,
+  p_room_type_name    TEXT,
+  p_check_in          DATE,
+  p_check_out         DATE,
+  p_nights            SMALLINT,
+  p_adults            SMALLINT,
+  p_children          SMALLINT,
+  p_special_requests  TEXT,
+  p_base_price        INTEGER,
+  p_subtotal          INTEGER,
+  p_taxes             INTEGER,
+  p_total             INTEGER,
+  p_tax_rate          NUMERIC,
+  p_payment_provider  TEXT,
+  p_payment_reference TEXT,
+  p_payment_id        UUID,
+  p_order_id          TEXT,
+  p_transaction_id    TEXT,
+  p_amount            INTEGER,
+  p_test_mode         BOOLEAN
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_inventory   SMALLINT;
+  v_booked      INTEGER;
+  v_available   INTEGER;
+BEGIN
+  -- Lock the room type row to serialise concurrent bookings
+  SELECT inventory INTO v_inventory
+  FROM room_types
+  WHERE id = p_room_type_id AND active = true
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RETURN jsonb_build_object('ok', false, 'reason', 'Room type not found or inactive.');
+  END IF;
+
+  -- Count current overlapping bookings
+  SELECT COUNT(*) INTO v_booked
+  FROM reservations
+  WHERE room_type_id = p_room_type_id
+    AND status NOT IN ('cancelled', 'no-show')
+    AND check_in  < p_check_out
+    AND check_out > p_check_in;
+
+  v_available := v_inventory - v_booked;
+
+  IF v_available <= 0 THEN
+    RETURN jsonb_build_object('ok', false, 'reason', 'This room is no longer available for your selected dates.');
+  END IF;
+
+  -- Insert reservation
+  INSERT INTO reservations (
+    id, booking_reference, guest_id, guest_name, guest_email, guest_phone,
+    room_type_id, room_type_name, check_in, check_out, nights, adults, children,
+    special_requests, base_price, subtotal, taxes, total, tax_rate,
+    currency, status, payment_status, payment_provider, payment_reference
+  ) VALUES (
+    p_id, p_booking_reference, p_guest_id, p_guest_name, p_guest_email, p_guest_phone,
+    p_room_type_id, p_room_type_name, p_check_in, p_check_out, p_nights, p_adults, p_children,
+    p_special_requests, p_base_price, p_subtotal, p_taxes, p_total, p_tax_rate,
+    'INR', 'confirmed', 'paid', p_payment_provider, p_payment_reference
+  );
+
+  -- Insert payment record
+  INSERT INTO payments (
+    id, reservation_id, booking_reference, provider,
+    order_id, transaction_id, amount, currency, status, test_mode
+  ) VALUES (
+    p_payment_id, p_id, p_booking_reference, p_payment_provider,
+    p_order_id, p_transaction_id, p_amount, 'INR', 'captured', p_test_mode
+  );
+
+  RETURN jsonb_build_object('ok', true, 'booking_reference', p_booking_reference);
+
+EXCEPTION WHEN OTHERS THEN
+  RETURN jsonb_build_object('ok', false, 'reason', SQLERRM);
+END;
+$$;
+```
+
+---
+
+## 12. Files That Need Modification
+
+| File | Current JSON Operation | New Supabase Operation | Changes Required |
+|---|---|---|---|
+| `api/_lib/db.js` | All `readJson`/`writeJson` file I/O | Supabase client queries | **Complete rewrite** — this is the only file that needs fundamental change; all other files import from here |
+| `api/reservations.js` | `createReservation()` + `createPaymentRecord()` + `upsertGuest()` | Call `create_reservation_atomic()` PostgreSQL function via `supabase.rpc()` | Replace the sequential calls with a single atomic RPC call; remove payment-mock call order |
+| `api/availability.js` | `getAvailableRooms()` reads JSON | Supabase SELECT on `room_types` + COUNT on `reservations` | Update to use Supabase queries; logic in `api/_lib/availability.js` stays the same |
+| `api/_lib/availability.js` | `getReservations()` + `getRoomTypes()` from db.js | Use new db.js Supabase functions | No logic changes — only the `getReservations()` and `getRoomTypes()` calls change |
+| `api/admin/reservations.js` | `getReservations()` with filters | Supabase SELECT with WHERE clauses | Update filter/search to SQL WHERE; pagination stays same |
+| `api/admin/reservations/[id].js` | `getReservationById()` + `updateReservation()` | Supabase SELECT + UPDATE | Minor updates to call new db.js functions |
+| `api/admin/dashboard.js` | `getReservations()` + `getGuests()` + `getRoomTypes()` + `getSettings()` | Supabase queries | Revenue calculations can become SQL aggregates |
+| `api/admin/rooms.js` | `getRoomTypes()` + `updateRoomType()` | Supabase SELECT + UPDATE | Minor updates |
+| `api/admin/guests.js` | `getGuests()` + `getReservations()` | Supabase JOIN or two queries | Consider a JOIN: `SELECT g.*, COUNT(r.id) FROM guests g LEFT JOIN reservations r ON ...` |
+| `api/admin/settings.js` | `getSettings()` + `updateSettings()` | Supabase SELECT + UPDATE with jsonb merge | `settings || $new::jsonb` for deep merge |
+| `api/auth/login.js` | `getUserByEmail()` | Supabase SELECT from `users` | Minor update |
+| `api/auth/logout.js` | `appendAuditLog()` | Supabase INSERT into `audit_logs` | Minor update |
+| `api/auth/me.js` | None (reads JWT only) | No change | ✅ No changes needed |
+| `api/_lib/auth.js` | No db calls | No change | ✅ No changes needed — JWT logic is pure |
+| `api/_lib/rate-limit.js` | In-memory Map | No change yet (acceptable for now) | 🟡 Future: replace with Supabase/Redis |
+| `api/_lib/validation.js` | No db calls | No change | ✅ No changes needed |
+| `api/_lib/payment-mock.js` | No db calls | No change | ✅ No changes needed (for now) |
+| `api/_lib/email-mock.js` | No db calls | No change | ✅ No changes needed (for now) |
+| `api/_lib/ota-adapters.js` | No db calls | No change | ✅ No changes needed |
+| `api/reservation/[id].js` | `getReservationByRef()` | Supabase SELECT WHERE `booking_reference = $ref` | Minor update |
+| `scripts/seed.js` | Writes JSON files | Write to Supabase | Update to use Supabase client + bcrypt |
+| All frontend JS files | No db changes | No change | ✅ Frontend is unchanged — it talks to the same API endpoints |
+
+**Key insight:** Only `api/_lib/db.js` needs a full rewrite. Every other file calls functions from `db.js` — if you rewrite `db.js` to use Supabase with the same exported function names, the rest of the app changes minimally.
+
+---
+
+## 13. Environment Variables
+
+### SERVER ONLY / SECRET — Never expose to frontend JavaScript
+
+| Variable | Value | Usage |
+|---|---|---|
+| `SUPABASE_SERVICE_ROLE_KEY` | From Supabase project settings | Used in `api/_lib/db.js` to bypass RLS and perform all database operations. **FATAL if leaked.** |
+| `DATABASE_URL` | `postgresql://postgres:[PASSWORD]@db.[PROJECT].supabase.co:5432/postgres` | Used if you connect via `pg`/Prisma directly instead of the JS client. Optional if using `@supabase/supabase-js` with the service role key. |
+| `AUTH_JWT_SECRET` | Random 64-byte hex string | Signs admin session JWTs. Already required. |
+| `PAYMENT_RAZORPAY_KEY_SECRET` | From Razorpay | Server-side payment verification. Never expose. |
+| `EMAIL_API_KEY` | From Resend/SendGrid | Server-side email sending. |
+
+### PUBLIC / FRONTEND SAFE
+
+| Variable | Value | Usage |
+|---|---|---|
+| `SUPABASE_URL` | `https://[PROJECT].supabase.co` | The Supabase project URL. Can be public. |
+| `SUPABASE_ANON_KEY` | From Supabase project settings | Public-safe key. Only allows what RLS permits (in this project: read active room_types). However, since ALL data access goes through Vercel API functions, the anon key is **not needed in frontend JavaScript at all**. |
+| `PAYMENT_RAZORPAY_KEY_ID` | From Razorpay | Public key for Razorpay checkout widget. Safe to include in frontend. |
+
+### How to configure in Vercel
+Vercel Dashboard → Project → Settings → Environment Variables → Add:
+- `SUPABASE_URL` (all environments)
+- `SUPABASE_SERVICE_ROLE_KEY` (production + preview only — never development if using JSON files locally)
+- `AUTH_JWT_SECRET` (all environments)
+
+---
+
+## 14. Migration Order (Safest Sequence)
+
+```
+Step 1  Create Supabase project
+Step 2  Run SQL migration script in Supabase SQL Editor (schema + enums + indexes + RLS + trigger)
+Step 3  Verify schema created correctly (check all tables, columns, constraints)
+Step 4  Migrate room_types data (no dependencies)
+Step 5  Migrate settings data (no dependencies)
+Step 6  Create production admin users (run updated seed.js with real credentials)
+Step 7  Migrate guests data (no dependencies on reservations)
+Step 8  DECIDE: migrate or discard existing reservations
+        → Discard: start with clean reservations (recommended — all 7 are demo/test)
+        → Migrate: insert the 3 real seeded reservations only (not test/localhost entries)
+Step 9  If migrating reservations, migrate payments (depends on reservations)
+Step 10 Migrate audit_logs (optional — can start fresh; they are dev-only entries)
+Step 11 Rewrite api/_lib/db.js with Supabase client
+Step 12 Update api/reservations.js to use create_reservation_atomic() RPC
+Step 13 Update remaining API files
+Step 14 Test locally with vercel dev + real Supabase instance
+Step 15 Deploy to Vercel production
+Step 16 Run end-to-end test: book → confirm → check admin dashboard
+Step 17 Verify audit logs are writing to Supabase
+```
+
+---
+
+## 15. Production Readiness Checklist
+
+| Item | Status | Notes |
+|---|---|---|
+| Booking flow UI (4 steps) | ✅ Already complete | No changes needed |
+| Server-side validation | ✅ Already complete | `api/_lib/validation.js` unchanged |
+| Server-side pricing | ✅ Already complete | Stays in `api/_lib/availability.js` |
+| Availability overlap logic | ✅ Already complete (algorithm) | Moves to SQL in `create_reservation_atomic()` |
+| Booking reference generation | ✅ Already complete | No changes |
+| Admin JWT authentication | ✅ Already complete | No changes |
+| Admin role-based access | ✅ Already complete | No changes |
+| Security HTTP headers | ✅ Already complete | `vercel.json` unchanged |
+| URL rewrites | ✅ Already complete | `vercel.json` unchanged |
+| Database schema design | ✅ This document | Ready to execute after your review |
+| `api/_lib/db.js` rewrite | 🟡 Needs modification | Full rewrite to Supabase client |
+| `api/reservations.js` atomic booking | 🟡 Needs modification | Wrap in `create_reservation_atomic()` RPC |
+| All other API files | 🟡 Minor modifications | Update imports from new db.js |
+| `scripts/seed.js` | 🟡 Needs modification | Rewrite to write to Supabase |
+| Real payment (Razorpay) | 🔴 Not implemented | Replace `payment-mock.js` |
+| Real email (Resend/SendGrid) | 🔴 Not implemented | Replace `email-mock.js` |
+| `SUPABASE_SERVICE_ROLE_KEY` in Vercel | 🔴 Not configured | Add after creating project |
+| `AUTH_JWT_SECRET` in Vercel | 🔴 Not configured | Generate and add |
+| Admin password changed from seed defaults | 🔴 Not done | Must change before production |
+| Demo/test reservations cleared | 🔴 Not done | Wipe all 7 before launch |
+| Persistent rate limiting (Redis) | 🔴 Not implemented | Low priority for Phase 1 |
+
+---
+
+## 16. STOP POINT
+
+**DO NOT CREATE THE DATABASE YET.**
+
+Before we proceed to execution, please review and confirm the following decisions:
+
+### Decision 1 — `room_types.id` as TEXT primary key
+The current JSON data uses text slugs like `standard-room` as the room type ID. I have preserved this. If you prefer UUID primary keys for room types, the schema needs adjustment in `reservations.room_type_id` as well.
+**→ Confirm: keep TEXT slug IDs for room_types? Or switch to UUID?**
+
+### Decision 2 — Existing reservation data
+The 7 reservations in `data/reservations.json` are:
+- 3 seeded demo records (Arjun Mehta, Priya Krishnamurthy, Rajesh Nair)
+- 4 test bookings (Test Guest Local, CSS Fix Test, John Doe x2)
+My recommendation: **discard all 7** and start with an empty reservations table. But do you want the 3 demo reservations migrated as sample data?
+**→ Confirm: discard all / keep 3 demo / keep all?**
+
+### Decision 3 — Payment amount units
+`reservations.total` = `13440` (rupees). `payments.amount` = `672000` (paise). This inconsistency exists in the current code. I have preserved both units in the schema. Do you want to normalise both to paise?
+**→ Confirm: keep current mixed units / normalise both to paise?**
+
+### Decision 4 — Supabase JS client vs direct PostgreSQL
+The `api/_lib/db.js` rewrite can use either:
+- `@supabase/supabase-js` — the Supabase JavaScript SDK (simpler, good for most operations)
+- `pg` / Prisma — raw PostgreSQL for the atomic booking function (required for `SELECT FOR UPDATE`)
+My recommendation: use `@supabase/supabase-js` for most operations + `pg` for the atomic booking transaction only.
+**→ Confirm: use @supabase/supabase-js + pg for atomic?**
+
+### Decision 5 — Supabase project created?
+Has the Supabase project been created yet? I need the `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` before we can proceed to execution.
+**→ Confirm: Supabase project URL + confirm you have the service role key ready**
+
+Send back your answers to these 5 decisions, and I will proceed to the execution phase.

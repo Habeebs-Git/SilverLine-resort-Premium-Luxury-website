@@ -2,7 +2,17 @@
   "rewrites": [
     { "source": "/", "destination": "/pages/index.html" },
     { "source": "/privacy-policy", "destination": "/pages/privacy-policy.html" },
-    { "source": "/terms", "destination": "/pages/terms-and-conditions.html" }
+    { "source": "/terms", "destination": "/pages/terms-and-conditions.html" },
+    { "source": "/booking", "destination": "/pages/booking.html" },
+    { "source": "/booking-confirmation", "destination": "/pages/booking-confirmation.html" },
+    { "source": "/admin", "destination": "/pages/admin/login.html" },
+    { "source": "/admin/login", "destination": "/pages/admin/login.html" },
+    { "source": "/admin/dashboard", "destination": "/pages/admin/dashboard.html" },
+    { "source": "/admin/reservations", "destination": "/pages/admin/reservations.html" },
+    { "source": "/admin/rooms", "destination": "/pages/admin/rooms.html" },
+    { "source": "/admin/guests", "destination": "/pages/admin/guests.html" },
+    { "source": "/admin/calendar", "destination": "/pages/admin/calendar.html" },
+    { "source": "/admin/settings", "destination": "/pages/admin/settings.html" }
   ],
   "headers": [
     {

@@ -1,0 +1,37 @@
+# ── Environment & Secrets ──────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── Node ───────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── Vercel ─────────────────────────────────────────────────
+.vercel/
+
+# ── Data (prototype JSON persistence — never commit live data) ──
+data/users.json
+data/reservations.json
+data/guests.json
+data/payments.json
+data/audit-logs.json
+
+# ── OS / Editor ────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+*.code-workspace
+
+# ── Logs ───────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Temporary ──────────────────────────────────────────────
+*.tmp
+*.temp

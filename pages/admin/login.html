@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Login — Silverline Resort Admin</title>
+  <meta name="description" content="Silverline Resort administration portal login." />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/css/theme.css" />
+  <link rel="stylesheet" href="/css/admin.css" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+</head>
+<body>
+
+<div class="admin-login-page">
+  <div class="admin-login-card">
+
+    <div class="admin-login-brand">
+      <div class="admin-login-brand-name">Silverline Resort</div>
+      <div class="admin-login-brand-sub">Administration Portal</div>
+    </div>
+
+    <div class="admin-login-error" id="login-error" role="alert" aria-live="assertive"></div>
+
+    <form id="login-form" novalidate>
+      <div class="admin-form-group">
+        <label class="admin-form-label" for="email">Email Address</label>
+        <input type="email" id="email" class="admin-input" name="email" autocomplete="username email"
+               required placeholder="admin@silverlineresort.in" aria-required="true" />
+      </div>
+
+      <div class="admin-form-group">
+        <label class="admin-form-label" for="password">Password</label>
+        <input type="password" id="password" class="admin-input" name="password" autocomplete="current-password"
+               required placeholder="••••••••" aria-required="true" />
+      </div>
+
+      <button type="submit" class="admin-login-submit" id="login-submit">
+        <span id="login-btn-text">Sign In</span>
+      </button>
+    </form>
+
+    <div class="admin-login-footer">
+      <div style="margin-bottom: 0.5rem; padding: 0.65rem; background: rgba(154, 122, 82, 0.07); border: 1px solid rgba(154,122,82,0.15); border-radius:4px; font-size:0.7rem; color: var(--teak);">
+        <strong>DEMO CREDENTIALS</strong><br/>
+        Admin: admin@silverlineresort.in / SilverlineAdmin2026!<br/>
+        Staff: staff@silverlineresort.in / SilverlineStaff2026!
+      </div>
+      <a href="/" style="color: var(--stone); text-decoration: none; font-size: 0.72rem;">← Return to website</a>
+    </div>
+
+  </div>
+</div>
+
+<script src="/js/admin/auth.js"></script>
+</body>
+</html>

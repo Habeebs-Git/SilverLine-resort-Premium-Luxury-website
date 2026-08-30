@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book Your Stay — Silverline Resort, Ooty</title>
+  <meta name="description" content="Reserve your room directly at Silverline Resort, Ooty. Best rate guaranteed when you book direct. Nestled in the Nilgiri hills." />
+  <meta name="robots" content="noindex" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/css/theme.css" />
+  <link rel="stylesheet" href="/css/booking.css" />
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+</head>
+<body class="booking-page">
+
+<!-- ═══════════════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════════════════ -->
+<header class="bk-header" role="banner">
+  <div class="bk-header-inner">
+    <a href="/" class="bk-logo" aria-label="Silverline Resort — Return to Homepage">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+        <path d="M11 2L3 8v12h5v-6h6v6h5V8L11 2z" stroke="#c0a077" stroke-width="1.2" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <span class="bk-logo-text">SILVERLINE RESORT</span>
+    </a>
+
+    <!-- Step Progress -->
+    <nav class="bk-progress" aria-label="Booking steps" id="bk-progress">
+      <div class="bk-step is-active" data-step="1" aria-current="step">
+        <div class="bk-step-dot"><span>1</span></div>
+        <div class="bk-step-label">Dates &amp; Guests</div>
+      </div>
+      <div class="bk-step" data-step="2">
+        <div class="bk-step-dot"><span>2</span></div>
+        <div class="bk-step-label">Choose Room</div>
+      </div>
+      <div class="bk-step" data-step="3">
+        <div class="bk-step-dot"><span>3</span></div>
+        <div class="bk-step-label">Your Details</div>
+      </div>
+      <div class="bk-step" data-step="4">
+        <div class="bk-step-dot"><span>4</span></div>
+        <div class="bk-step-label">Confirm</div>
+      </div>
+    </nav>
+
+    <a href="tel:+918638479919" class="bk-help-link" aria-label="Call us for booking assistance">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.62 8.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012.53 2h3a2 2 0 012 1.72c.127.96.36 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 9.91a16 16 0 006.18 6.18l1.28-1.28a2 2 0 012.11-.45c.907.34 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+      Need help?
+    </a>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════
+     MAIN LAYOUT
+════════════════════════════════════════════════════════ -->
+<main class="bk-layout" id="bk-main" role="main">
+
+  <!-- ── LEFT: Step Content ── -->
+  <div class="bk-content" id="bk-content">
+
+    <!-- ════════════════════════════════
+         STEP 1: Dates & Guests
+    ════════════════════════════════ -->
+    <section class="bk-panel" id="step-1" aria-labelledby="step1-title">
+      <div class="bk-panel-inner">
+        <p class="bk-eyebrow">Step 1 of 4</p>
+        <h1 class="bk-panel-title" id="step1-title">Plan Your Escape</h1>
+        <p class="bk-panel-sub">Choose your dates and the number of guests for your stay at Silverline Resort, Ooty.</p>
+
+        <div class="bk-dates-grid">
+          <div class="bk-field-group">
+            <label class="bk-field-label" for="check-in">Check-In</label>
+            <div class="bk-date-input-wrap">
+              <input type="date" id="check-in" class="bk-input bk-date-input" aria-required="true" autocomplete="off" />
+              <div class="bk-date-hint">from 14:00</div>
+            </div>
+          </div>
+          <div class="bk-field-group">
+            <label class="bk-field-label" for="check-out">Check-Out</label>
+            <div class="bk-date-input-wrap">
+              <input type="date" id="check-out" class="bk-input bk-date-input" aria-required="true" autocomplete="off" />
+              <div class="bk-date-hint">by 11:00</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bk-guest-section">
+          <label class="bk-field-label" id="guests-label">Guests</label>
+          <div class="bk-guest-grid" role="group" aria-labelledby="guests-label">
+            <div class="bk-guest-control">
+              <div class="bk-guest-type">Adults</div>
+              <div class="bk-guest-hint">18 years &amp; above</div>
+              <div class="bk-counter" role="group" aria-label="Adults">
+                <button class="bk-counter-btn" id="adults-minus" aria-label="Decrease adults" data-target="adults-val" data-min="1" data-max="6">−</button>
+                <output class="bk-counter-val" id="adults-val" aria-live="polite">2</output>
+                <button class="bk-counter-btn" id="adults-plus" aria-label="Increase adults" data-target="adults-val" data-min="1" data-max="6">+</button>
+              </div>
+            </div>
+            <div class="bk-guest-control">
+              <div class="bk-guest-type">Children</div>
+              <div class="bk-guest-hint">Under 18 years</div>
+              <div class="bk-counter" role="group" aria-label="Children">
+                <button class="bk-counter-btn" id="children-minus" aria-label="Decrease children" data-target="children-val" data-min="0" data-max="4">−</button>
+                <output class="bk-counter-val" id="children-val" aria-live="polite">0</output>
+                <button class="bk-counter-btn" id="children-plus" aria-label="Increase children" data-target="children-val" data-min="0" data-max="4">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bk-error" id="step1-error" role="alert" aria-live="assertive" aria-atomic="true"></div>
+
+        <div class="bk-perks">
+          <div class="bk-perk">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+            <span>Best Rate Guaranteed</span>
+          </div>
+          <div class="bk-perk">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+            <span>Free Breakfast Included</span>
+          </div>
+          <div class="bk-perk">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+            <span>Free Cancellation up to 48 hrs</span>
+          </div>
+        </div>
+
+        <div class="bk-actions">
+          <button class="bk-btn-primary" id="step1-next" type="button">
+            Check Availability
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════
+         STEP 2: Room Selection
+    ════════════════════════════════ -->
+    <section class="bk-panel bk-panel--hidden" id="step-2" aria-labelledby="step2-title">
+      <div class="bk-panel-inner">
+        <p class="bk-eyebrow">Step 2 of 4</p>
+        <h2 class="bk-panel-title" id="step2-title">Choose Your Room</h2>
+        <p class="bk-panel-sub" id="step2-sub">Available rooms for your stay</p>
+
+        <div class="bk-rooms-loading" id="rooms-loading" aria-live="polite">
+          <div class="bk-spinner" aria-label="Loading available rooms..."></div>
+          <p>Checking availability…</p>
+        </div>
+
+        <div class="bk-rooms-empty" id="rooms-empty" aria-live="polite">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <h3>No rooms available</h3>
+          <p>No rooms are available for your selected dates and guest count. Please try different dates.</p>
+          <button class="bk-btn-ghost" id="rooms-empty-back" type="button">Change Dates</button>
+        </div>
+
+        <div class="bk-rooms-list" id="rooms-list" role="list" aria-label="Available rooms"></div>
+
+        <div class="bk-error" id="step2-error" role="alert" aria-live="assertive"></div>
+
+        <div class="bk-actions">
+          <button class="bk-btn-ghost" id="step2-back" type="button">← Back</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════
+         STEP 3: Guest Details
+    ════════════════════════════════ -->
+    <section class="bk-panel bk-panel--hidden" id="step-3" aria-labelledby="step3-title">
+      <div class="bk-panel-inner">
+        <p class="bk-eyebrow">Step 3 of 4</p>
+        <h2 class="bk-panel-title" id="step3-title">Your Details</h2>
+        <p class="bk-panel-sub">Please provide your contact details so we can confirm your reservation.</p>
+
+        <form id="guest-form" novalidate>
+          <div class="bk-form-grid">
+            <div class="bk-field-group bk-field-full">
+              <label class="bk-field-label" for="guest-name">Full Name <span class="bk-required" aria-label="required">*</span></label>
+              <input type="text" id="guest-name" class="bk-input" name="guestName" autocomplete="name" required
+                     placeholder="As it appears on your ID" aria-describedby="name-error" />
+              <div class="bk-field-error" id="name-error" role="alert" aria-live="polite"></div>
+            </div>
+
+            <div class="bk-field-group">
+              <label class="bk-field-label" for="guest-email">Email Address <span class="bk-required" aria-label="required">*</span></label>
+              <input type="email" id="guest-email" class="bk-input" name="guestEmail" autocomplete="email" required
+                     placeholder="you@example.com" aria-describedby="email-error" />
+              <div class="bk-field-error" id="email-error" role="alert" aria-live="polite"></div>
+              <div class="bk-field-hint">Confirmation sent here</div>
+            </div>
+
+            <div class="bk-field-group">
+              <label class="bk-field-label" for="guest-phone">Phone Number <span class="bk-required" aria-label="required">*</span></label>
+              <input type="tel" id="guest-phone" class="bk-input" name="guestPhone" autocomplete="tel" required
+                     placeholder="+91 98765 43210" aria-describedby="phone-error" />
+              <div class="bk-field-error" id="phone-error" role="alert" aria-live="polite"></div>
+            </div>
+
+            <div class="bk-field-group bk-field-full">
+              <label class="bk-field-label" for="special-requests">Special Requests <span class="bk-optional">(optional)</span></label>
+              <textarea id="special-requests" class="bk-input bk-textarea" name="specialRequests" rows="3"
+                        placeholder="Dietary requirements, celebrations, early check-in requests…"
+                        maxlength="500" aria-describedby="sr-counter"></textarea>
+              <div class="bk-textarea-footer">
+                <span class="bk-field-hint">Subject to availability · not guaranteed</span>
+                <span class="bk-char-counter" id="sr-counter" aria-live="polite">0/500</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Demo notice -->
+          <div class="bk-demo-notice" role="note">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            <span><strong>DEMO MODE</strong> — This is a prototype. No real payment will be processed and no actual reservation will be created.</span>
+          </div>
+
+          <div class="bk-error" id="step3-error" role="alert" aria-live="assertive"></div>
+
+          <div class="bk-actions">
+            <button class="bk-btn-ghost" id="step3-back" type="button">← Back</button>
+            <button class="bk-btn-primary" id="step3-next" type="submit">
+              Review &amp; Confirm
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════
+         STEP 4: Confirm
+    ════════════════════════════════ -->
+    <section class="bk-panel bk-panel--hidden" id="step-4" aria-labelledby="step4-title">
+      <div class="bk-panel-inner">
+        <p class="bk-eyebrow">Step 4 of 4</p>
+        <h2 class="bk-panel-title" id="step4-title">Review Your Reservation</h2>
+        <p class="bk-panel-sub">Please verify the details before confirming.</p>
+
+        <!-- Confirmation Summary (populated by JS) -->
+        <div class="bk-confirm-summary" id="confirm-summary">
+          <!-- Populated by booking-engine.js -->
+        </div>
+
+        <div class="bk-payment-section">
+          <div class="bk-section-label">Payment</div>
+          <div class="bk-payment-mock-notice" role="note">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            <div>
+              <strong>TEST / DEMO PAYMENT</strong>
+              <p>No real payment will be charged. This is a prototype demonstration.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bk-cancellation-policy">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          <span>Free cancellation up to 48 hours before check-in. After that, one night charge applies.</span>
+        </div>
+
+        <div class="bk-error" id="step4-error" role="alert" aria-live="assertive"></div>
+
+        <div class="bk-actions">
+          <button class="bk-btn-ghost" id="step4-back" type="button">← Back</button>
+          <button class="bk-btn-confirm" id="confirm-btn" type="button">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+            Confirm Reservation
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /bk-content -->
+
+  <!-- ── RIGHT: Sticky Booking Summary ── -->
+  <aside class="bk-summary" id="bk-summary" aria-label="Booking summary" aria-live="polite">
+    <div class="bk-summary-inner">
+      <div class="bk-summary-empty" id="summary-empty">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <p>Select your dates to see available rooms</p>
+      </div>
+
+      <div class="bk-summary-content" id="summary-content" hidden>
+        <div class="bk-summary-room" id="summary-room"></div>
+
+        <div class="bk-summary-dates" id="summary-dates"></div>
+
+        <div class="bk-summary-guests" id="summary-guests"></div>
+
+        <div class="bk-summary-pricing" id="summary-pricing"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Mobile Summary Sheet -->
+  <div class="bk-mobile-summary" id="bk-mobile-summary">
+    <button class="bk-mobile-summary-toggle" id="mobile-summary-toggle" type="button" aria-expanded="false" aria-controls="mobile-summary-body">
+      <span id="mobile-summary-short">View booking summary</span>
+      <svg class="bk-mobile-summary-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 15l-6-6-6 6"/></svg>
+    </button>
+    <div class="bk-mobile-summary-body" id="mobile-summary-body"></div>
+  </div>
+
+</main><!-- /bk-layout -->
+
+<!-- ═══════════════════════════════════════════════════════
+     GLOBAL LOADING OVERLAY
+════════════════════════════════════════════════════════ -->
+<div class="bk-global-overlay" id="bk-overlay" role="status" aria-live="polite" aria-label="Processing your reservation">
+  <div class="bk-overlay-inner">
+    <div class="bk-spinner bk-spinner--lg" aria-hidden="true"></div>
+    <p class="bk-overlay-msg" id="overlay-msg">Processing…</p>
+  </div>
+</div>
+
+<script src="/js/booking-engine.js"></script>
+</body>
+</html>

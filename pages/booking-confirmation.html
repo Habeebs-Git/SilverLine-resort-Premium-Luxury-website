@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Booking Confirmed — Silverline Resort, Ooty</title>
+  <meta name="description" content="Your reservation at Silverline Resort is confirmed. We look forward to welcoming you." />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/css/theme.css" />
+  <link rel="stylesheet" href="/css/booking.css" />
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+  <style>
+    /* ── Confirmation Page Specific Styles ── */
+    .conf-page {
+      background: var(--charcoal-deep);
+      color: var(--ivory);
+      font-family: var(--font-body);
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .conf-header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid rgba(215, 220, 216, 0.06);
+    }
+
+    .conf-header-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .conf-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      text-decoration: none;
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      letter-spacing: 0.26em;
+      color: var(--ivory);
+    }
+
+    .conf-main {
+      flex: 1;
+      max-width: 760px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 3rem 2rem 4rem;
+    }
+
+    /* Success Animation */
+    .conf-success-icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .conf-check-circle {
+      width: 72px;
+      height: 72px;
+    }
+
+    .conf-check-circle-bg {
+      stroke: rgba(44, 74, 63, 0.3);
+      stroke-width: 2;
+      fill: rgba(44, 74, 63, 0.15);
+    }
+
+    .conf-check-circle-border {
+      stroke: #7ecba1;
+      stroke-width: 2;
+      fill: none;
+      stroke-dasharray: 220;
+      stroke-dashoffset: 220;
+      stroke-linecap: round;
+      animation: circleIn 0.8s 0.2s var(--ease-silk) forwards;
+    }
+
+    .conf-check-path {
+      stroke: #7ecba1;
+      stroke-width: 2.5;
+      fill: none;
+      stroke-dasharray: 40;
+      stroke-dashoffset: 40;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      animation: checkIn 0.5s 0.9s var(--ease-silk) forwards;
+    }
+
+    @keyframes circleIn { to { stroke-dashoffset: 0; } }
+    @keyframes checkIn  { to { stroke-dashoffset: 0; } }
+
+    .conf-headline {
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .conf-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      color: var(--ivory);
+      margin-bottom: 0.5rem;
+    }
+
+    .conf-subtitle {
+      font-size: 0.875rem;
+      color: var(--stone-light);
+      margin-bottom: 0.75rem;
+    }
+
+    .conf-ref-display {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(44, 74, 63, 0.15);
+      border: 1px solid rgba(44, 74, 63, 0.4);
+      border-radius: 6px;
+      padding: 0.65rem 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .conf-ref-label {
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--stone);
+    }
+
+    .conf-ref-value {
+      font-family: monospace;
+      font-size: 1rem;
+      color: #7ecba1;
+      letter-spacing: 0.1em;
+    }
+
+    .conf-ref-copy {
+      background: none;
+      border: none;
+      color: var(--stone);
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 3px;
+      transition: color 0.2s;
+    }
+
+    .conf-ref-copy:hover { color: var(--ivory); }
+
+    /* Reservation Card */
+    .conf-card {
+      background: var(--charcoal);
+      border: 1px solid rgba(215, 220, 216, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    .conf-card-room-img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .conf-card-body {
+      padding: 1.75rem;
+    }
+
+    .conf-room-eyebrow {
+      font-size: 0.625rem;
+      font-weight: 500;
+      letter-spacing: 0.38em;
+      text-transform: uppercase;
+      color: var(--teak);
+      margin-bottom: 0.35rem;
+    }
+
+    .conf-room-name {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--ivory);
+      margin-bottom: 1.25rem;
+    }
+
+    .conf-detail-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .conf-detail-item {}
+
+    .conf-detail-label {
+      font-size: 0.625rem;
+      font-weight: 500;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--stone);
+      margin-bottom: 0.35rem;
+    }
+
+    .conf-detail-value {
+      font-size: 0.9rem;
+      color: var(--ivory);
+    }
+
+    .conf-detail-sub {
+      font-size: 0.72rem;
+      color: var(--stone);
+      margin-top: 0.15rem;
+    }
+
+    .conf-divider {
+      border: none;
+      border-top: 1px solid rgba(215, 220, 216, 0.06);
+      margin: 1.25rem 0;
+    }
+
+    .conf-pricing-table {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .conf-pricing-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.875rem;
+    }
+
+    .conf-pricing-row .label { color: var(--stone-light); }
+    .conf-pricing-row .value { color: var(--fog); }
+
+    .conf-pricing-row.is-total {
+      margin-top: 0.5rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid rgba(215, 220, 216, 0.06);
+    }
+
+    .conf-pricing-row.is-total .label {
+      color: var(--ivory);
+      font-weight: 400;
+      letter-spacing: 0.04em;
+    }
+
+    .conf-pricing-row.is-total .value {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      color: var(--teak-light);
+    }
+
+    /* Guest Info */
+    .conf-guest-card {
+      background: var(--charcoal);
+      border: 1px solid rgba(215, 220, 216, 0.08);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .conf-section-eyebrow {
+      font-size: 0.625rem;
+      font-weight: 500;
+      letter-spacing: 0.38em;
+      text-transform: uppercase;
+      color: var(--stone);
+      margin-bottom: 1rem;
+    }
+
+    .conf-guest-detail {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-size: 0.875rem;
+      color: var(--fog);
+      margin-bottom: 0.5rem;
+    }
+
+    .conf-guest-detail svg {
+      color: var(--teak);
+      flex-shrink: 0;
+    }
+
+    /* What to expect */
+    .conf-checklist {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .conf-checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      font-size: 0.84rem;
+      color: var(--stone-light);
+    }
+
+    .conf-checklist li svg {
+      color: var(--teak);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Payment notice */
+    .conf-payment-notice {
+      background: rgba(154, 122, 82, 0.07);
+      border: 1px solid rgba(154, 122, 82, 0.2);
+      border-radius: 6px;
+      padding: 0.85rem 1.1rem;
+      font-size: 0.8rem;
+      color: var(--stone-light);
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+
+    .conf-payment-notice strong { color: var(--teak-light); }
+    .conf-payment-notice svg { flex-shrink: 0; margin-top: 2px; color: var(--teak); }
+
+    /* Actions */
+    .conf-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+
+    .conf-btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.8rem 1.75rem;
+      background: var(--teak);
+      color: var(--ivory-warm);
+      border: none;
+      border-radius: 4px;
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.25s;
+    }
+
+    .conf-btn-primary:hover { background: var(--teak-light); }
+
+    .conf-btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.8rem 1.5rem;
+      background: transparent;
+      color: var(--stone-light);
+      border: 1px solid rgba(215, 220, 216, 0.15);
+      border-radius: 4px;
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: all 0.25s;
+    }
+
+    .conf-btn-ghost:hover {
+      color: var(--ivory);
+      border-color: rgba(215, 220, 216, 0.3);
+    }
+
+    /* Error state */
+    .conf-error-state {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+
+    .conf-error-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .conf-error-title {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      color: var(--ivory);
+      margin-bottom: 0.5rem;
+    }
+
+    .conf-error-msg {
+      font-size: 0.875rem;
+      color: var(--stone-light);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .conf-main { padding: 2rem 1.25rem 3rem; }
+      .conf-detail-grid { grid-template-columns: 1fr 1fr; }
+      .conf-actions { flex-direction: column; }
+      .conf-card-room-img { height: 160px; }
+    }
+  </style>
+</head>
+<body class="conf-page">
+
+<header class="conf-header" role="banner">
+  <div class="conf-header-inner">
+    <a href="/" class="conf-logo" aria-label="Silverline Resort — Return to Homepage">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+        <path d="M11 2L3 8v12h5v-6h6v6h5V8L11 2z" stroke="#c0a077" stroke-width="1.2" stroke-linejoin="round" fill="none"/>
+      </svg>
+      SILVERLINE RESORT
+    </a>
+    <a href="tel:+918638479919" class="bk-help-link" aria-label="Call us">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.62 8.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012.53 2h3a2 2 0 012 1.72c.127.96.36 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 9.91a16 16 0 006.18 6.18l1.28-1.28a2 2 0 012.11-.45c.907.34 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+      +91 86384 79919
+    </a>
+  </div>
+</header>
+
+<main class="conf-main" id="conf-main" role="main">
+
+  <!-- Success State (shown when booking completes) -->
+  <div id="conf-success" hidden>
+    <div class="conf-success-icon" aria-hidden="true">
+      <svg class="conf-check-circle" viewBox="0 0 72 72">
+        <circle class="conf-check-circle-bg" cx="36" cy="36" r="34"/>
+        <circle class="conf-check-circle-border" cx="36" cy="36" r="34" transform="rotate(-90 36 36)"/>
+        <path class="conf-check-path" d="M22 36l10 10 18-18"/>
+      </svg>
+    </div>
+
+    <div class="conf-headline">
+      <h1 class="conf-title">Reservation Confirmed</h1>
+      <p class="conf-subtitle">Thank you — we look forward to welcoming you to Silverline Resort.</p>
+    </div>
+
+    <div style="text-align:center; margin-bottom: 2rem;">
+      <div class="conf-ref-display" id="conf-ref-display">
+        <span class="conf-ref-label">Booking Reference</span>
+        <span class="conf-ref-value" id="conf-ref-value">—</span>
+        <button class="conf-ref-copy" id="conf-ref-copy" type="button" aria-label="Copy booking reference" title="Copy">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Demo Payment Notice -->
+    <div class="conf-payment-notice" id="conf-payment-notice" role="note">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      <div>
+        <strong>DEMO / TEST MODE</strong> — This is a prototype demonstration. No real payment was processed and no actual reservation was created in a production database.
+      </div>
+    </div>
+
+    <!-- Room Card -->
+    <div class="conf-card" id="conf-room-card">
+      <img id="conf-room-img" src="" alt="Room image" class="conf-card-room-img" loading="lazy" />
+      <div class="conf-card-body">
+        <p class="conf-room-eyebrow">Your Room</p>
+        <h2 class="conf-room-name" id="conf-room-name">—</h2>
+
+        <div class="conf-detail-grid" id="conf-detail-grid">
+          <!-- Populated by JS -->
+        </div>
+
+        <hr class="conf-divider" />
+
+        <div class="conf-pricing-table" id="conf-pricing-table">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Guest Info -->
+    <div class="conf-guest-card">
+      <p class="conf-section-eyebrow">Guest Information</p>
+      <div class="conf-guest-detail" id="conf-guest-name">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>—</span>
+      </div>
+      <div class="conf-guest-detail" id="conf-guest-email">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <span>—</span>
+      </div>
+      <div class="conf-guest-detail" id="conf-guest-phone">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.62 8.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012.53 2h3a2 2 0 012 1.72c.127.96.36 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 9.91a16 16 0 006.18 6.18l1.28-1.28a2 2 0 012.11-.45c.907.34 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        <span>—</span>
+      </div>
+      <div class="conf-guest-detail" id="conf-special-requests" style="display:none;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        <span>—</span>
+      </div>
+    </div>
+
+    <!-- What to Expect -->
+    <div class="conf-guest-card">
+      <p class="conf-section-eyebrow">What to Expect</p>
+      <ul class="conf-checklist" aria-label="Arrival information">
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+          Check-in from 14:00 — your room will be ready and waiting.
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+          Check-out by 11:00. Late checkout subject to availability (request at front desk).
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+          Complimentary breakfast served daily.
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+          Free parking available on premises.
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+          For any assistance, call us at +91 86384 79919.
+        </li>
+      </ul>
+    </div>
+
+    <!-- Directions -->
+    <div class="conf-guest-card" style="margin-bottom: 0;">
+      <p class="conf-section-eyebrow">Find Us</p>
+      <div class="conf-guest-detail" style="margin-bottom: 0.75rem;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>2/259, Kathadimattam Road, Balacola, Ooty, Tamil Nadu 643003</span>
+      </div>
+      <a href="https://maps.google.com/?q=Silverline+Resort+Ooty" target="_blank" rel="noopener noreferrer"
+         class="conf-btn-ghost" style="display:inline-flex; margin-top: 0.5rem; font-size: 0.72rem;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Open in Maps
+      </a>
+    </div>
+
+    <div class="conf-actions">
+      <a href="/" class="conf-btn-primary">Return to Homepage</a>
+      <button class="conf-btn-ghost" id="conf-print-btn" type="button" onclick="window.print()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Save / Print
+      </button>
+    </div>
+  </div>
+
+  <!-- Error State (shown if page loaded without a valid booking) -->
+  <div id="conf-error" hidden class="conf-error-state">
+    <div class="conf-error-icon" aria-hidden="true">⚠</div>
+    <h1 class="conf-error-title">Booking Not Found</h1>
+    <p class="conf-error-msg">We couldn't find your booking details. The page may have been refreshed or accessed directly.</p>
+    <a href="/pages/booking.html" class="conf-btn-primary" style="display:inline-flex; text-decoration:none;">Make a Reservation</a>
+  </div>
+
+  <!-- Loading State -->
+  <div id="conf-loading" style="text-align:center; padding:4rem 1rem;">
+    <div class="bk-spinner" style="margin: 0 auto 1rem;" aria-hidden="true"></div>
+    <p style="color: var(--stone); font-size:0.875rem;">Loading confirmation…</p>
+  </div>
+
+</main>
+
+<script src="/js/booking-confirmation.js"></script>
+</body>
+</html>

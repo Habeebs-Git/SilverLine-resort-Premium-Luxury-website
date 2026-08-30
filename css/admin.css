@@ -1,0 +1,1594 @@
+/* ============================================================
+   SILVERLINE RESORT — Admin Dashboard Styles
+   Extends /css/theme.css design tokens.
+   All admin pages must feel like a natural extension of the
+   luxury resort website — never a generic SaaS dashboard.
+   ============================================================ */
+
+/* ─── Admin Layout Base ──────────────────────────────────────────────────── */
+
+.admin-page {
+  background: var(--charcoal-deep);
+  color: var(--ivory);
+  font-family: var(--font-body);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Admin Sidebar ──────────────────────────────────────────────────────── */
+
+.admin-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 240px;
+  background: var(--charcoal);
+  border-right: 1px solid rgba(215, 220, 216, 0.08);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  transition: transform 0.35s var(--ease-silk);
+}
+
+.admin-sidebar-brand {
+  padding: 1.5rem 1.5rem 1.25rem;
+  border-bottom: 1px solid rgba(215, 220, 216, 0.06);
+}
+
+.admin-sidebar-brand a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-decoration: none;
+}
+
+.admin-brand-name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: 0.16em;
+  color: var(--ivory);
+  text-transform: uppercase;
+}
+
+.admin-brand-label {
+  font-family: var(--font-body);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--stone);
+}
+
+.admin-nav {
+  flex: 1;
+  padding: 1.25rem 0;
+  overflow-y: auto;
+}
+
+.admin-nav-section {
+  margin-bottom: 0.25rem;
+}
+
+.admin-nav-label {
+  padding: 0.4rem 1.5rem;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: var(--stone);
+  margin-bottom: 0.25rem;
+}
+
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1.5rem;
+  color: var(--stone-light);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  transition: color 0.25s, background 0.25s;
+  border-left: 2px solid transparent;
+  position: relative;
+}
+
+.admin-nav-link svg {
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+  flex-shrink: 0;
+  transition: opacity 0.25s;
+}
+
+.admin-nav-link:hover {
+  color: var(--ivory);
+  background: rgba(215, 220, 216, 0.04);
+}
+
+.admin-nav-link:hover svg { opacity: 1; }
+
+.admin-nav-link.is-active {
+  color: var(--teak-light);
+  border-left-color: var(--teak);
+  background: rgba(154, 122, 82, 0.07);
+}
+
+.admin-nav-link.is-active svg { opacity: 1; }
+
+.admin-nav-badge {
+  margin-left: auto;
+  background: var(--pine);
+  color: var(--fog);
+  font-size: 0.625rem;
+  font-weight: 500;
+  padding: 0.15rem 0.45rem;
+  border-radius: 100px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.admin-sidebar-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(215, 220, 216, 0.06);
+}
+
+.admin-user-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--pine);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--teak-light);
+  flex-shrink: 0;
+}
+
+.admin-user-name {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--ivory);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-user-role {
+  font-size: 0.625rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--teak);
+}
+
+.admin-logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  background: none;
+  border: none;
+  color: var(--stone);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.admin-logout-btn:hover { color: var(--ivory); }
+
+/* ─── Admin Main Content ──────────────────────────────────────────────────── */
+
+.admin-main {
+  margin-left: 240px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid rgba(215, 220, 216, 0.06);
+  background: rgba(13, 16, 18, 0.7);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.admin-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admin-page-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--ivory);
+}
+
+.admin-page-subtitle {
+  font-size: 0.8rem;
+  color: var(--stone);
+  letter-spacing: 0.04em;
+}
+
+.admin-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admin-content {
+  flex: 1;
+  padding: 2rem;
+}
+
+/* ─── Stat Cards ─────────────────────────────────────────────────────────── */
+
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--charcoal);
+  border: 1px solid rgba(215, 220, 216, 0.08);
+  border-radius: 6px;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s, transform 0.3s var(--ease-silk);
+}
+
+.stat-card:hover {
+  border-color: rgba(154, 122, 82, 0.3);
+  transform: translateY(-2px);
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--teak), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.stat-card:hover::before { opacity: 1; }
+
+.stat-label {
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--stone);
+  margin-bottom: 0.75rem;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 400;
+  color: var(--ivory);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.stat-sub {
+  font-size: 0.75rem;
+  color: var(--stone);
+}
+
+.stat-icon {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 32px;
+  height: 32px;
+  opacity: 0.15;
+}
+
+.stat-card.is-highlight {
+  background: linear-gradient(135deg, rgba(44, 74, 63, 0.6), var(--charcoal));
+  border-color: rgba(44, 74, 63, 0.5);
+}
+
+.stat-card.is-revenue .stat-value {
+  color: var(--teak-light);
+}
+
+/* ─── Section Card ───────────────────────────────────────────────────────── */
+
+.admin-section {
+  background: var(--charcoal);
+  border: 1px solid rgba(215, 220, 216, 0.08);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.admin-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(215, 220, 216, 0.06);
+}
+
+.admin-section-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: 0.1em;
+  color: var(--ivory);
+}
+
+.admin-section-body {
+  padding: 1.5rem;
+}
+
+/* ─── Data Table ─────────────────────────────────────────────────────────── */
+
+.admin-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.admin-table th {
+  padding: 0.65rem 1rem;
+  text-align: left;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--stone);
+  border-bottom: 1px solid rgba(215, 220, 216, 0.08);
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(215, 220, 216, 0.04);
+  color: var(--fog);
+  vertical-align: middle;
+}
+
+.admin-table tr:last-child td { border-bottom: none; }
+
+.admin-table tr:hover td { background: rgba(215, 220, 216, 0.02); }
+
+.admin-table .ref-col {
+  font-family: monospace;
+  font-size: 0.78rem;
+  color: var(--teak-light);
+}
+
+.admin-table .guest-name {
+  font-weight: 400;
+  color: var(--ivory);
+}
+
+/* ─── Status Badges ──────────────────────────────────────────────────────── */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 100px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.status-badge::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-badge.confirmed {
+  background: rgba(44, 74, 63, 0.4);
+  color: #7ecba1;
+}
+
+.status-badge.checked-in {
+  background: rgba(184, 161, 121, 0.2);
+  color: var(--amber-glow);
+}
+
+.status-badge.checked-out {
+  background: rgba(125, 138, 134, 0.15);
+  color: var(--stone-light);
+}
+
+.status-badge.cancelled {
+  background: rgba(180, 50, 50, 0.15);
+  color: #e07070;
+}
+
+.status-badge.no-show {
+  background: rgba(120, 80, 40, 0.2);
+  color: #c09060;
+}
+
+.status-badge.pending {
+  background: rgba(80, 80, 180, 0.15);
+  color: #a0a0e0;
+}
+
+.status-badge.paid {
+  background: rgba(44, 74, 63, 0.3);
+  color: #7ecba1;
+}
+
+/* ─── Form Controls ──────────────────────────────────────────────────────── */
+
+.admin-form-group {
+  margin-bottom: 1.25rem;
+}
+
+.admin-form-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--stone-light);
+  margin-bottom: 0.5rem;
+}
+
+.admin-input,
+.admin-select,
+.admin-textarea {
+  width: 100%;
+  background: rgba(13, 16, 18, 0.6);
+  border: 1px solid rgba(215, 220, 216, 0.12);
+  border-radius: 4px;
+  color: var(--ivory);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  padding: 0.7rem 0.9rem;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.admin-input:focus,
+.admin-select:focus,
+.admin-textarea:focus {
+  border-color: rgba(154, 122, 82, 0.5);
+  box-shadow: 0 0 0 3px rgba(154, 122, 82, 0.08);
+}
+
+.admin-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237d8a86' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  padding-right: 2.2rem;
+}
+
+.admin-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* ─── Buttons ────────────────────────────────────────────────────────────── */
+
+.btn-admin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.25s var(--ease-silk);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-admin svg {
+  width: 15px;
+  height: 15px;
+}
+
+.btn-admin-primary {
+  background: var(--teak);
+  color: var(--ivory-warm);
+  border-color: var(--teak);
+}
+
+.btn-admin-primary:hover {
+  background: var(--teak-light);
+  border-color: var(--teak-light);
+}
+
+.btn-admin-ghost {
+  background: transparent;
+  color: var(--stone-light);
+  border-color: rgba(215, 220, 216, 0.15);
+}
+
+.btn-admin-ghost:hover {
+  color: var(--ivory);
+  border-color: rgba(215, 220, 216, 0.3);
+}
+
+.btn-admin-danger {
+  background: transparent;
+  color: #e07070;
+  border-color: rgba(224, 112, 112, 0.25);
+}
+
+.btn-admin-danger:hover {
+  background: rgba(224, 112, 112, 0.1);
+  border-color: rgba(224, 112, 112, 0.5);
+}
+
+.btn-admin-sm {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.72rem;
+}
+
+.btn-admin:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ─── Toolbar / Filters ──────────────────────────────────────────────────── */
+
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.admin-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.admin-search {
+  position: relative;
+}
+
+.admin-search-input {
+  background: rgba(13, 16, 18, 0.6);
+  border: 1px solid rgba(215, 220, 216, 0.12);
+  border-radius: 4px;
+  color: var(--ivory);
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  padding: 0.6rem 0.9rem 0.6rem 2.25rem;
+  outline: none;
+  width: 220px;
+  transition: border-color 0.25s, width 0.35s var(--ease-silk);
+}
+
+.admin-search-input:focus {
+  border-color: rgba(154, 122, 82, 0.4);
+  width: 280px;
+}
+
+.admin-search-icon {
+  position: absolute;
+  left: 0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--stone);
+  pointer-events: none;
+}
+
+/* ─── Pagination ─────────────────────────────────────────────────────────── */
+
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(215, 220, 216, 0.06);
+}
+
+.admin-pagination-info {
+  font-size: 0.8rem;
+  color: var(--stone);
+}
+
+.admin-pagination-buttons {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.admin-page-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid rgba(215, 220, 216, 0.12);
+  border-radius: 3px;
+  color: var(--stone-light);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-page-btn:hover {
+  border-color: rgba(154, 122, 82, 0.3);
+  color: var(--ivory);
+}
+
+.admin-page-btn.is-active {
+  background: var(--teak);
+  border-color: var(--teak);
+  color: var(--ivory-warm);
+}
+
+/* ─── Toast / Notification ───────────────────────────────────────────────── */
+
+.admin-toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.admin-toast {
+  background: var(--charcoal);
+  border: 1px solid rgba(215, 220, 216, 0.12);
+  border-radius: 6px;
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.84rem;
+  color: var(--ivory);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  pointer-events: all;
+  animation: toastIn 0.3s var(--ease-silk);
+  max-width: 320px;
+}
+
+.admin-toast.is-success { border-left: 3px solid #7ecba1; }
+.admin-toast.is-error { border-left: 3px solid #e07070; }
+.admin-toast.is-info { border-left: 3px solid var(--teak); }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Overlay / Modal ────────────────────────────────────────────────────── */
+
+.admin-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.admin-overlay.is-open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.admin-modal {
+  background: var(--charcoal);
+  border: 1px solid rgba(215, 220, 216, 0.1);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: translateY(20px);
+  transition: transform 0.3s var(--ease-silk);
+}
+
+.admin-overlay.is-open .admin-modal {
+  transform: translateY(0);
+}
+
+.admin-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(215, 220, 216, 0.06);
+}
+
+.admin-modal-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  color: var(--ivory);
+}
+
+.admin-modal-close {
+  background: none;
+  border: none;
+  color: var(--stone);
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color 0.2s;
+  line-height: 1;
+}
+
+.admin-modal-close:hover { color: var(--ivory); }
+
+.admin-modal-body {
+  padding: 1.5rem;
+}
+
+.admin-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(215, 220, 216, 0.06);
+}
+
+/* ─── Loader / Skeleton ──────────────────────────────────────────────────── */
+
+.admin-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.admin-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgba(215, 220, 216, 0.1);
+  border-top-color: var(--teak);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.admin-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.admin-empty-icon {
+  width: 40px;
+  height: 40px;
+  opacity: 0.2;
+  margin: 0 auto 1rem;
+}
+
+.admin-empty-text {
+  color: var(--stone);
+  font-size: 0.875rem;
+}
+
+/* ─── Grid layouts ───────────────────────────────────────────────────────── */
+
+.admin-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.admin-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+/* ─── Calendar Component ─────────────────────────────────────────────────── */
+
+.admin-calendar {
+  background: var(--charcoal);
+  border: 1px solid rgba(215, 220, 216, 0.08);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.admin-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(215, 220, 216, 0.06);
+}
+
+.admin-cal-month {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  color: var(--ivory);
+}
+
+.admin-cal-nav {
+  background: none;
+  border: 1px solid rgba(215, 220, 216, 0.12);
+  border-radius: 3px;
+  color: var(--stone-light);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-cal-nav:hover {
+  color: var(--ivory);
+  border-color: rgba(215, 220, 216, 0.3);
+}
+
+.admin-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.admin-cal-day-label {
+  padding: 0.6rem;
+  text-align: center;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--stone);
+  border-bottom: 1px solid rgba(215, 220, 216, 0.04);
+}
+
+.admin-cal-cell {
+  border: 1px solid rgba(215, 220, 216, 0.04);
+  min-height: 80px;
+  padding: 0.4rem;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.admin-cal-cell:hover { background: rgba(215, 220, 216, 0.02); }
+
+.admin-cal-cell.is-today { background: rgba(154, 122, 82, 0.05); }
+
+.admin-cal-date {
+  font-size: 0.75rem;
+  color: var(--stone);
+  margin-bottom: 0.25rem;
+}
+
+.admin-cal-cell.is-today .admin-cal-date { color: var(--teak-light); }
+
+.admin-cal-event {
+  display: block;
+  padding: 0.15rem 0.35rem;
+  border-radius: 2px;
+  font-size: 0.65rem;
+  color: var(--ivory);
+  margin-bottom: 0.15rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.admin-cal-event.check-in { background: rgba(44, 74, 63, 0.6); }
+.admin-cal-event.check-out { background: rgba(154, 122, 82, 0.4); }
+.admin-cal-event.stay { background: rgba(31, 55, 48, 0.5); }
+
+/* ─── Room Card (Admin Rooms Page) ───────────────────────────────────────── */
+
+.admin-room-card {
+  background: var(--charcoal);
+  border: 1px solid rgba(215, 220, 216, 0.08);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.admin-room-card:hover { border-color: rgba(154, 122, 82, 0.25); }
+
+.admin-room-img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-room-body {
+  padding: 1rem;
+}
+
+.admin-room-name {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  color: var(--ivory);
+  margin-bottom: 0.4rem;
+}
+
+.admin-room-meta {
+  font-size: 0.75rem;
+  color: var(--stone);
+  margin-bottom: 0.75rem;
+}
+
+.admin-room-price {
+  font-size: 1.1rem;
+  font-family: var(--font-display);
+  color: var(--teak-light);
+  margin-bottom: 0.75rem;
+}
+
+.admin-room-inventory-bar {
+  height: 4px;
+  background: rgba(215, 220, 216, 0.1);
+  border-radius: 2px;
+  margin-bottom: 0.35rem;
+  overflow: hidden;
+}
+
+.admin-room-inventory-fill {
+  height: 100%;
+  background: var(--pine);
+  border-radius: 2px;
+  transition: width 0.5s var(--ease-silk);
+}
+
+.admin-room-inventory-fill.is-low { background: #b87050; }
+
+/* ─── Admin Login Page ───────────────────────────────────────────────────── */
+
+.admin-login-page {
+  min-height: 100svh;
+  background: var(--charcoal-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-login-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 60% at 50% 0%, rgba(44, 74, 63, 0.15), transparent);
+  pointer-events: none;
+}
+
+.admin-login-card {
+  background: var(--charcoal);
+  border: 1px solid rgba(215, 220, 216, 0.08);
+  border-radius: 8px;
+  padding: 2.5rem 2.5rem 2rem;
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+  z-index: 1;
+}
+
+.admin-login-brand {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.admin-login-brand-name {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ivory);
+  margin-bottom: 0.3rem;
+}
+
+.admin-login-brand-sub {
+  font-size: 0.625rem;
+  font-weight: 400;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--stone);
+}
+
+.admin-login-error {
+  background: rgba(224, 112, 112, 0.1);
+  border: 1px solid rgba(224, 112, 112, 0.25);
+  border-radius: 4px;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.84rem;
+  color: #e09090;
+  margin-bottom: 1.25rem;
+  display: none;
+}
+
+.admin-login-error.is-visible { display: block; }
+
+.admin-login-submit {
+  width: 100%;
+  padding: 0.85rem;
+  background: var(--teak);
+  border: none;
+  border-radius: 4px;
+  color: var(--ivory-warm);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.25s;
+  margin-top: 0.5rem;
+}
+
+.admin-login-submit:hover { background: var(--teak-light); }
+
+.admin-login-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-login-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.72rem;
+  color: var(--stone);
+}
+
+/* ─── Mobile Hamburger Toggle ────────────────────────────────────────────── */
+
+.admin-menu-toggle {
+  display: none;
+  background: none;
+  border: 1px solid rgba(215, 220, 216, 0.15);
+  border-radius: 4px;
+  padding: 0.5rem;
+  color: var(--stone-light);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.admin-menu-toggle:hover { color: var(--ivory); }
+
+.admin-sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 99;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 1100px) {
+  .admin-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .admin-grid-3 { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 900px) {
+  .admin-sidebar {
+    transform: translateX(-100%);
+  }
+  .admin-sidebar.is-open {
+    transform: translateX(0);
+    box-shadow: 4px 0 40px rgba(0,0,0,0.4);
+  }
+  .admin-sidebar-backdrop.is-open { display: block; }
+  .admin-main { margin-left: 0; }
+  .admin-menu-toggle { display: flex; }
+  .admin-topbar { padding: 1rem 1.25rem; }
+  .admin-content { padding: 1.25rem; }
+}
+
+@media (max-width: 640px) {
+  .admin-stats-grid { grid-template-columns: 1fr 1fr; }
+  .admin-grid-2, .admin-grid-3 { grid-template-columns: 1fr; }
+  .admin-toolbar { flex-direction: column; align-items: stretch; }
+  .admin-toolbar-left { flex-wrap: wrap; }
+  .admin-search-input { width: 100%; }
+  .admin-search-input:focus { width: 100%; }
+  .admin-table { font-size: 0.78rem; }
+}
+
+
+@media (max-width: 480px) {
+  .admin-stats-grid { grid-template-columns: 1fr; }
+  .admin-login-card { padding: 1.75rem 1.25rem; }
+}
+
+/* ─── Sidebar backdrop visible state ──────────────────────────────────────── */
+.admin-sidebar-backdrop.is-visible { display: block; }
+
+/* ─── Modal (standalone — used without .admin-overlay wrapper) ───────────── */
+.admin-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.admin-modal.is-open {
+  opacity: 1;
+  pointer-events: all;
+}
+.admin-modal-card {
+  background: var(--charcoal);
+  border: 1px solid rgba(215, 220, 216, 0.1);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: translateY(20px);
+  transition: transform 0.3s var(--ease-silk);
+}
+.admin-modal.is-open .admin-modal-card {
+  transform: translateY(0);
+}
+
+/* ─── Detail grid (reservation detail view) ──────────────────────────────── */
+.admin-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.admin-detail-full {
+  grid-column: 1 / -1;
+}
+.admin-detail-section {}
+.admin-detail-label {
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--stone);
+  margin-bottom: 0.35rem;
+}
+.admin-detail-value {
+  font-size: 0.875rem;
+  color: var(--fog);
+  line-height: 1.5;
+}
+.admin-detail-value small { font-size: 0.78rem; color: var(--stone); }
+
+/* ─── Status update buttons ──────────────────────────────────────────────── */
+.admin-modal-status-actions {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(215, 220, 216, 0.06);
+}
+.admin-status-btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ─── Status badges ──────────────────────────────────────────────────────── */
+.admin-status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 100px;
+  font-size: 0.675rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.badge-confirmed   { background: rgba(44, 74, 63, 0.25); color: #7ecba1; border: 1px solid rgba(44,74,63,0.4); }
+.badge-checked-in  { background: rgba(44, 74, 63, 0.45); color: #a8e6c0; border: 1px solid rgba(44,74,63,0.6); }
+.badge-completed   { background: rgba(215, 220, 216, 0.1); color: var(--stone-light); border: 1px solid rgba(215,220,216,0.15); }
+.badge-pending     { background: rgba(154, 122, 82, 0.15); color: var(--teak-light); border: 1px solid rgba(154,122,82,0.3); }
+.badge-cancelled   { background: rgba(224, 112, 112, 0.12); color: #e09090; border: 1px solid rgba(224,112,112,0.25); }
+.badge-noshow      { background: rgba(110, 80, 60, 0.2); color: #c09070; border: 1px solid rgba(110,80,60,0.35); }
+
+/* ─── Table utility ──────────────────────────────────────────────────────── */
+.admin-link {
+  color: var(--teak-light);
+  text-decoration: none;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+.admin-link:hover { color: var(--ivory); text-decoration: underline; }
+
+.admin-actions-cell { display: flex; gap: 0.4rem; }
+
+.admin-guest-name { font-size: 0.875rem; color: var(--ivory); }
+.admin-guest-email { font-size: 0.78rem; color: var(--stone); margin-top: 0.1rem; }
+
+/* ─── Guest avatar (small, for table rows) ───────────────────────────────── */
+.admin-guest-avatar-wrap { display: flex; align-items: center; gap: 0.65rem; }
+.admin-guest-avatar-sm {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--pine);
+  color: var(--teak-light);
+  font-size: 0.72rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ─── Empty state ────────────────────────────────────────────────────────── */
+.admin-empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--stone);
+}
+.admin-empty-state svg { margin: 0 auto 1rem; opacity: 0.2; display: block; }
+.admin-empty-state p { font-size: 0.875rem; }
+
+/* ─── Room cards (rooms page) ────────────────────────────────────────────── */
+.admin-rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+.admin-room-card-img-wrap { position: relative; }
+.admin-room-card-img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  display: block;
+}
+.admin-room-card-status {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 100px;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.admin-room-card-status.is-active  { background: rgba(44,74,63,0.8); color: #7ecba1; }
+.admin-room-card-status.is-inactive{ background: rgba(60,40,30,0.8); color: #c09070; }
+.admin-room-card.is-inactive { opacity: 0.65; }
+.admin-room-card-body { padding: 1rem; }
+.admin-room-card-name {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  color: var(--ivory);
+  margin-bottom: 0.3rem;
+}
+.admin-room-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--stone);
+  margin-bottom: 0.5rem;
+}
+.admin-room-card-desc {
+  font-size: 0.8rem;
+  color: var(--stone-light);
+  margin-bottom: 0.85rem;
+  line-height: 1.5;
+}
+.admin-room-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+  padding: 0.75rem;
+  background: rgba(13,16,18,0.4);
+  border-radius: 4px;
+}
+.admin-room-stat {}
+.admin-room-stat-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--stone);
+  display: block;
+  margin-bottom: 0.2rem;
+}
+.admin-room-stat-value {
+  font-size: 0.84rem;
+  color: var(--ivory);
+  display: block;
+}
+.admin-room-card-amenities { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.admin-room-amenity {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  background: rgba(215,220,216,0.05);
+  border: 1px solid rgba(215,220,216,0.1);
+  border-radius: 100px;
+  font-size: 0.65rem;
+  color: var(--stone-light);
+}
+.admin-room-amenity-more { color: var(--stone); }
+
+/* ─── Dashboard room summary ─────────────────────────────────────────────── */
+.admin-room-summary-list { display: flex; flex-direction: column; gap: 0.85rem; padding: 0.25rem 0; }
+.admin-room-summary-item {}
+.admin-room-summary-name { font-size: 0.84rem; color: var(--ivory); margin-bottom: 0.2rem; }
+.admin-room-summary-meta { font-size: 0.75rem; color: var(--stone); margin-bottom: 0.5rem; }
+.admin-room-summary-bar {
+  height: 4px;
+  background: rgba(215,220,216,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.admin-room-summary-fill {
+  height: 100%;
+  background: var(--pine);
+  border-radius: 2px;
+  transition: width 0.6s var(--ease-silk);
+  min-width: 0;
+}
+
+/* ─── Calendar page layout ───────────────────────────────────────────────── */
+.admin-calendar-wrap { width: 100%; }
+
+.admin-cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+.admin-cal-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.1em;
+  color: var(--ivory);
+  flex: 1;
+  text-align: center;
+}
+.admin-cal-legend {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.cal-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--stone-light);
+}
+.cal-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.cal-legend-dot--booked  { background: var(--pine); }
+.cal-legend-dot--today   { background: var(--teak); }
+.cal-legend-dot--checkin { background: #7ecba1; }
+.cal-legend-dot--checkout{ background: var(--teak-light); }
+
+.admin-cal-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+/* Calendar Grid */
+.admin-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: rgba(215,220,216,0.06);
+  border: 1px solid rgba(215,220,216,0.06);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.cal-day-header {
+  background: var(--charcoal);
+  padding: 0.5rem;
+  text-align: center;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--stone);
+}
+.cal-cell {
+  background: var(--charcoal-deep);
+  min-height: 72px;
+  padding: 0.4rem 0.5rem;
+  transition: background 0.2s;
+  cursor: default;
+}
+.cal-cell--blank { background: rgba(13,16,18,0.5); }
+.cal-cell--past { opacity: 0.45; }
+.cal-cell--today { background: rgba(154,122,82,0.06); }
+.cal-cell--has-bookings { cursor: pointer; }
+.cal-cell--has-bookings:hover { background: rgba(215,220,216,0.03); }
+.cal-cell--checkin  { border-left: 2px solid #7ecba1; }
+.cal-cell--checkout { border-right: 2px solid var(--teak-light); }
+.cal-day-num {
+  font-size: 0.72rem;
+  color: var(--stone);
+  margin-bottom: 0.3rem;
+}
+.cal-cell--today .cal-day-num { color: var(--teak-light); font-weight: 500; }
+.cal-day-dots { display: flex; flex-wrap: wrap; gap: 3px; }
+.cal-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pine);
+  display: inline-block;
+}
+.cal-more { font-size: 0.6rem; color: var(--stone); }
+
+/* Calendar Day Detail Panel */
+.admin-cal-panel {
+  background: var(--charcoal);
+  border: 1px solid rgba(215,220,216,0.08);
+  border-radius: 6px;
+  overflow: hidden;
+  max-height: 600px;
+  overflow-y: auto;
+  opacity: 0;
+  transform: translateX(8px);
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+}
+.admin-cal-panel.is-open {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: all;
+}
+.admin-cal-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid rgba(215,220,216,0.06);
+}
+.admin-cal-panel-date {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--ivory);
+}
+.admin-cal-panel-body { padding: 0.75rem; }
+.cal-panel-item {
+  background: rgba(13,16,18,0.3);
+  border: 1px solid rgba(215,220,216,0.06);
+  border-radius: 4px;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.cal-panel-item:last-child { margin-bottom: 0; }
+.cal-panel-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+.cal-panel-ref { font-size: 0.72rem; color: var(--teak-light); font-family: monospace; }
+.cal-panel-guest { font-size: 0.84rem; color: var(--ivory); margin-bottom: 0.2rem; }
+.cal-panel-room  { font-size: 0.75rem; color: var(--stone-light); margin-bottom: 0.2rem; }
+.cal-panel-dates { font-size: 0.7rem; color: var(--stone); }
+
+/* ─── Settings form ──────────────────────────────────────────────────────── */
+.admin-settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.admin-form-full { grid-column: 1 / -1; }
+.admin-form-hint {
+  font-size: 0.72rem;
+  color: var(--stone);
+  margin-top: 0.3rem;
+}
+.admin-info-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.85rem 1.1rem;
+  background: rgba(154,122,82,0.07);
+  border: 1px solid rgba(154,122,82,0.2);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--stone-light);
+}
+.admin-info-notice svg { flex-shrink: 0; margin-top: 2px; color: var(--teak); }
+.admin-info-notice code {
+  font-family: monospace;
+  font-size: 0.78rem;
+  background: rgba(13,16,18,0.5);
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+}
+
+/* ─── Responsive additions ───────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .admin-cal-layout { grid-template-columns: 1fr; }
+  .admin-cal-panel { max-height: 300px; }
+}
+@media (max-width: 768px) {
+  .admin-detail-grid { grid-template-columns: 1fr; }
+  .admin-rooms-grid { grid-template-columns: 1fr; }
+  .admin-settings-grid { grid-template-columns: 1fr; }
+  .admin-room-card-stats { grid-template-columns: 1fr 1fr; }
+  .admin-cal-grid { font-size: 0.72rem; }
+  .cal-cell { min-height: 52px; }
+}
+

@@ -1,0 +1,48 @@
+{
+  "hotel": {
+    "name": "Silverline Resort",
+    "tagline": "Experience Serenity in the Heart of the Nilgiris",
+    "address": "2/259, Kathadimattam Road, Balacola, Ooty, Tamil Nadu 643003",
+    "phone": "+918638479919",
+    "email": "info@silverlineresort.in",
+    "reservationsEmail": "reservations@silverlineresort.in",
+    "website": "https://www.silverlineresort.in",
+    "checkInTime": "14:00",
+    "checkOutTime": "11:00",
+    "currency": "INR",
+    "currencySymbol": "₹",
+    "timezone": "Asia/Kolkata"
+  },
+  "pricing": {
+    "taxRate": 0.12,
+    "taxLabel": "GST (12%)",
+    "serviceFee": 0,
+    "breakfastIncluded": true,
+    "breakfastLabel": "Breakfast Included",
+    "cancellationPolicy": "Free cancellation up to 48 hours before check-in. After that, 1 night charge applies.",
+    "advanceBookingDays": 365,
+    "minNights": 1,
+    "maxNights": 30
+  },
+  "notifications": {
+    "emailProvider": "mock",
+    "smsProvider": "none",
+    "sendConfirmation": true,
+    "sendCancellation": true,
+    "sendReminder": false
+  },
+  "ota": {
+    "provider": "mock",
+    "agodaUrl": "https://www.agoda.com/en-in/silverline-resort/hotel/ooty-in.html?rooms=1&adults=2&children=0&cid=1917615",
+    "ixigoUrl": "https://www.ixigo.com/hotels/3992248/details?locationId=2603820&locationName=Silverline%20Resort&locationType=H&masterLocationId=3024853&countryId=1&adultCount=2&roomCount=1&childCount=0&cityId=559&stateId=5&hName=Silverline%20Resort"
+  },
+  "payment": {
+    "provider": "mock",
+    "supportedMethods": [
+      "card",
+      "upi",
+      "netbanking"
+    ],
+    "testMode": true
+  }
+}

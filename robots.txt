@@ -3,5 +3,9 @@
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api/
+Disallow: /booking-confirmation
 
 Sitemap: https://www.silverlineresort.in/sitemap.xml

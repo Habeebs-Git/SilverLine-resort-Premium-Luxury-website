@@ -1,0 +1,24 @@
+{
+  "name": "silverline-resort-booking",
+  "version": "1.0.0-prototype",
+  "description": "Silverline Resort — Complete Booking System (Prototype)",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "seed": "node scripts/seed.js",
+    "test": "node api/_lib/availability.test.js",
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.112.4",
+    "bcryptjs": "^2.4.3",
+    "cookie": "^0.6.0",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "vercel": "^37.0.0"
+  }
+}
