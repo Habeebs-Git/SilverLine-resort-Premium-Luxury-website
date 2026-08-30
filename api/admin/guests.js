@@ -17,8 +17,11 @@ module.exports = async function handler(req, res) {
   if (!user) return;
 
   try {
-    let guests       = getGuests();
-    const reservations = getReservations();
+    // Fetch guests and reservations in parallel
+    let [guests, reservations] = await Promise.all([
+      getGuests(),
+      getReservations()
+    ]);
 
     const { search, page = '1', limit = '20' } = req.query;
 

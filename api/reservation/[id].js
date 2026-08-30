@@ -26,11 +26,11 @@ module.exports = async function handler(req, res) {
     const sanitizedRef = ref.trim().toUpperCase();
 
     // Validate reference format
-    if (!/^SLR-\d{8}-[A-Z0-9]{4}$/.test(sanitizedRef)) {
+    if (!/^SLR-\d{8}-[A-Z0-9]{3,6}$/.test(sanitizedRef)) {
       return res.status(400).json({ error: 'Invalid booking reference format.' });
     }
 
-    const reservation = getReservationByRef(sanitizedRef);
+    const reservation = await getReservationByRef(sanitizedRef);
 
     if (!reservation) {
       return res.status(404).json({ error: 'Reservation not found. Please check your booking reference.' });

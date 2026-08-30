@@ -30,7 +30,7 @@ module.exports = async function handler(req, res) {
     // ── Rate limit check
     const rl = checkRateLimit(ip);
     if (rl.limited) {
-      appendAuditLog({
+      await appendAuditLog({
         action: 'LOGIN_RATE_LIMITED',
         resource: 'auth',
         meta: { ip }
@@ -62,7 +62,7 @@ module.exports = async function handler(req, res) {
     }
 
     // ── Look up user
-    const user = getUserByEmail(emailCheck.value);
+    const user = await getUserByEmail(emailCheck.value);
 
     // ── Constant-time comparison (prevents timing attacks)
     // Always run bcrypt.compare even if user not found (prevents timing enumeration)
@@ -73,7 +73,7 @@ module.exports = async function handler(req, res) {
 
     if (!user || !isValid || !user.active) {
       recordAttempt(ip);
-      appendAuditLog({
+      await appendAuditLog({
         action: 'LOGIN_FAILED',
         resource: 'auth',
         meta: { email: emailCheck.value, ip, reason: !user ? 'user_not_found' : !isValid ? 'wrong_password' : 'inactive' }
@@ -92,7 +92,7 @@ module.exports = async function handler(req, res) {
       name:  user.name
     });
 
-    appendAuditLog({
+    await appendAuditLog({
       userId:   user.id,
       action:   'LOGIN_SUCCESS',
       resource: 'auth',

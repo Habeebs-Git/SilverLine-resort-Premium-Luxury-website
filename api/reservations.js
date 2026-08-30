@@ -6,6 +6,7 @@
  * - All inputs validated server-side
  * - Price recalculated server-side (never trusts client price)
  * - Availability re-verified at booking time (prevents race conditions)
+ * - Final atomic double-booking protection inside PostgreSQL RPC
  * - Booking reference generated server-side
  */
 
@@ -14,7 +15,7 @@
 const { v4: uuidv4 }                = require('uuid');
 const { validateReservationInput }  = require('./_lib/validation');
 const { validateFinalAvailability, calculatePricing } = require('./_lib/availability');
-const { createReservation, upsertGuest, createPaymentRecord, getSettings, appendAuditLog } = require('./_lib/db');
+const { createReservation, upsertGuest, createPaymentRecord, getSettings, getRoomTypeById, appendAuditLog } = require('./_lib/db');
 const { createPayment, verifyPayment }                = require('./_lib/payment-mock');
 const { sendBookingConfirmation, sendAdminNotification } = require('./_lib/email-mock');
 const { syncAvailability }          = require('./_lib/ota-adapters');
@@ -43,13 +44,11 @@ module.exports = async function handler(req, res) {
     const body = req.body || {};
 
     // ── Get settings (tax rate, etc.)
-    const settings = getSettings();
+    const settings = await getSettings();
     const taxRate   = settings?.pricing?.taxRate || 0.12;
 
     // ── Step 1: Validate all inputs server-side
-    // validateReservationInput also fetches roomType for capacity check
-    const { getRoomTypeById } = require('./_lib/db');
-    const roomType = getRoomTypeById(body.roomTypeId);
+    const roomType = await getRoomTypeById(body.roomTypeId);
 
     const validation = validateReservationInput(body, roomType);
     if (!validation.valid) {
@@ -62,8 +61,8 @@ module.exports = async function handler(req, res) {
     const { checkIn, checkOut, nights, adults, children,
             guestName, guestEmail, guestPhone, specialRequests, roomTypeId } = validation.sanitized;
 
-    // ── Step 2: Re-verify availability (race condition protection)
-    const availCheck = validateFinalAvailability(roomTypeId, checkIn, checkOut, adults, children);
+    // ── Step 2: Re-verify availability (early rejection before RPC)
+    const availCheck = await validateFinalAvailability(roomTypeId, checkIn, checkOut, adults, children);
     if (!availCheck.ok) {
       return res.status(409).json({ error: availCheck.reason });
     }
@@ -74,20 +73,16 @@ module.exports = async function handler(req, res) {
     const pricing = calculatePricing(rt.basePrice, nights, taxRate);
 
     // ── Step 4: Create/upsert guest record
-    const guestId = uuidv4();
-    const guest = upsertGuest({
-      id: guestId,
-      name: guestName,
+    const guest = await upsertGuest({
+      name:  guestName,
       email: guestEmail,
-      phone: guestPhone,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      phone: guestPhone
     });
 
     // ── Step 5: Create payment intent (mock in prototype)
     const paymentIntent = createPayment({
-      amount: pricing.total * 100, // smallest unit (paise)
-      currency: 'INR',
+      amount:     pricing.total * 100, // paise
+      currency:   'INR',
       bookingRef: '[pending]',
       guestEmail
     });
@@ -103,43 +98,60 @@ module.exports = async function handler(req, res) {
       return res.status(402).json({ error: 'Payment verification failed. Please try again.' });
     }
 
-    // ── Step 7: Create reservation
+    // ── Step 7: Create reservation atomically via PostgreSQL RPC
+    // The RPC handles: row-lock → overlap-count → INSERT reservation → INSERT payment
+    // in a single transaction. This is the true double-booking protection.
     const bookingReference = generateBookingRef();
     const reservationId    = uuidv4();
+    const paymentId        = uuidv4();
     const now              = new Date().toISOString();
 
-    const reservation = createReservation({
-      id: reservationId,
-      bookingReference,
-      guestId:          guest.id,
-      guestName,
-      guestEmail,
-      guestPhone,
-      roomTypeId:       rt.id,
-      roomTypeName:     rt.name,
-      checkIn,
-      checkOut,
-      nights,
-      adults,
-      children,
-      specialRequests,
-      basePrice:        pricing.basePrice,
-      subtotal:         pricing.subtotal,
-      taxes:            pricing.taxes,
-      total:            pricing.total,
-      taxRate:          pricing.taxRate,
-      currency:         'INR',
-      status:           'confirmed',
-      paymentStatus:    'paid',
-      paymentProvider:  'mock',
-      paymentReference: paymentVerify.transactionId,
-      createdAt: now,
-      updatedAt: now
-    });
+    let reservation;
+    try {
+      reservation = await createReservation({
+        id:               reservationId,
+        bookingReference,
+        guestId:          guest.id,
+        guestName,
+        guestEmail,
+        guestPhone,
+        roomTypeId:       rt.id,
+        roomTypeName:     rt.name,
+        checkIn,
+        checkOut,
+        nights,
+        adults,
+        children,
+        specialRequests,
+        basePrice:        pricing.basePrice,
+        subtotal:         pricing.subtotal,
+        taxes:            pricing.taxes,
+        total:            pricing.total,
+        taxRate:          pricing.taxRate,
+        currency:         'INR',
+        status:           'confirmed',
+        paymentStatus:    'paid',
+        paymentProvider:  'mock',
+        paymentReference: paymentVerify.transactionId,
+        createdAt: now,
+        updatedAt: now,
+        // Extra fields passed to the RPC (not stored on the reservation object itself)
+        _paymentId:      paymentId,
+        _orderId:        paymentIntent.orderId,
+        _transactionId:  paymentVerify.transactionId,
+        _amountPaise:    pricing.total * 100
+      });
+    } catch (rpcErr) {
+      // RPC returned ok:false (e.g., NO_AVAILABILITY race condition)
+      if (rpcErr.rpcResult) {
+        return res.status(409).json({ error: rpcErr.message || 'Room no longer available.' });
+      }
+      throw rpcErr; // Re-throw real DB errors
+    }
 
-    // ── Step 8: Record payment
-    createPaymentRecord({
-      id:            uuidv4(),
+    // ── Step 8: Record payment (no-op stub — RPC already inserted it)
+    await createPaymentRecord({
+      id:            paymentId,
       reservationId,
       bookingReference,
       provider:       'mock',
@@ -156,19 +168,31 @@ module.exports = async function handler(req, res) {
     syncAvailability(rt.id, checkIn, checkOut, -1);
 
     // ── Step 10: Send confirmation email (mock)
-    sendBookingConfirmation(reservation);
+    sendBookingConfirmation({
+      bookingReference,
+      guestName,
+      guestEmail,
+      roomTypeName: rt.name,
+      checkIn,
+      checkOut,
+      nights,
+      adults,
+      children,
+      total:    pricing.total,
+      currency: 'INR'
+    });
     sendAdminNotification(
       `New Booking: ${bookingReference}`,
       `${guestName} — ${rt.name} | ${checkIn} → ${checkOut} | ₹${pricing.total}`
     );
 
     // ── Step 11: Audit log
-    appendAuditLog({
-      userId:   null, // Guest action, no admin user
-      action:   'RESERVATION_CREATED',
-      resource: 'reservation',
+    await appendAuditLog({
+      userId:     null, // Guest action, no admin user
+      action:     'RESERVATION_CREATED',
+      resource:   'reservation',
       resourceId: reservationId,
-      meta:     { bookingReference, guestEmail, roomTypeId, checkIn, checkOut }
+      meta:       { bookingReference, guestEmail, roomTypeId, checkIn, checkOut }
     });
 
     // ── Return success (never expose internal IDs or sensitive data)

@@ -1,6 +1,7 @@
 /**
  * SILVERLINE RESORT — Admin Reservations API
  * GET  /api/admin/reservations  — List/search reservations
+ * PATCH /api/admin/reservations — Bulk status update
  * Requires: admin or staff role
  */
 
@@ -18,7 +19,7 @@ module.exports = async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      let reservations = getReservations();
+      let reservations = await getReservations();
 
       // ── Filters
       const { status, search, checkIn, checkOut, page = '1', limit = '20' } = req.query;
@@ -42,7 +43,8 @@ module.exports = async function handler(req, res) {
         reservations = reservations.filter(r => r.checkOut <= checkOut);
       }
 
-      // ── Sort by created date descending
+      // ── Sort by created date descending (already ordered by DB, but
+      //    client-side filters may change the set — re-sort for safety)
       reservations = reservations
         .slice()
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -85,19 +87,19 @@ module.exports = async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid bulk update parameters.' });
       }
 
-      const results = ids.map(id => {
-        const updated = updateReservation(id, { status, updatedBy: user.id });
+      const results = await Promise.all(ids.map(async id => {
+        const updated = await updateReservation(id, { status, updatedBy: user.id });
         if (updated) {
-          appendAuditLog({
+          await appendAuditLog({
             userId:     user.id,
-            action:     `RESERVATION_STATUS_CHANGED`,
+            action:     'RESERVATION_STATUS_CHANGED',
             resource:   'reservation',
             resourceId: id,
             meta:       { newStatus: status, changedBy: user.email }
           });
         }
         return { id, ok: !!updated };
-      });
+      }));
 
       return res.status(200).json({ updated: results });
     }

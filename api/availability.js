@@ -41,11 +41,11 @@ module.exports = async function handler(req, res) {
     }
 
     // ── Get settings for tax rate
-    const settings = getSettings();
+    const settings = await getSettings();
     const taxRate   = settings?.pricing?.taxRate || 0.12;
 
     // ── Get available rooms (server-side availability check)
-    const rooms = getAvailableRooms(checkIn, checkOut, guestCheck.adults, guestCheck.children);
+    const rooms = await getAvailableRooms(checkIn, checkOut, guestCheck.adults, guestCheck.children);
 
     // ── Attach pricing to each room
     const result = rooms.map(room => ({

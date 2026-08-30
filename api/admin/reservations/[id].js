@@ -25,7 +25,7 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid reservation ID.' });
     }
 
-    const reservation = getReservationById(id);
+    const reservation = await getReservationById(id);
     if (!reservation) {
       return res.status(404).json({ error: 'Reservation not found.' });
     }
@@ -66,9 +66,9 @@ module.exports = async function handler(req, res) {
         return res.status(400).json({ error: 'No valid fields to update.' });
       }
 
-      const updated = updateReservation(id, { ...updates, updatedBy: user.id });
+      const updated = await updateReservation(id, { ...updates, updatedBy: user.id });
 
-      appendAuditLog({
+      await appendAuditLog({
         userId:     user.id,
         action:     'RESERVATION_UPDATED',
         resource:   'reservation',

@@ -4,10 +4,13 @@
  * The single source of truth for room availability.
  * This logic MUST run server-side — never trust client-provided availability.
  *
- * Overlap detection:
+ * Overlap detection (unchanged from JSON version):
  *   A booking occupies dates [checkIn, checkOut).
  *   Check-out day is NOT occupied (a new guest can check in on that day).
  *   Two bookings overlap if:  newCheckIn < existingCheckOut && newCheckOut > existingCheckIn
+ *
+ * All functions are now async because they call the Supabase db layer.
+ * calculatePricing() is pure math and remains synchronous.
  */
 
 'use strict';
@@ -21,14 +24,14 @@ const { getReservations, getRoomTypes } = require('./db');
  * @param {string} roomTypeId
  * @param {string} checkIn   YYYY-MM-DD
  * @param {string} checkOut  YYYY-MM-DD
- * @returns {number} overlapping confirmed bookings
+ * @returns {Promise<number>} overlapping confirmed bookings
  */
-function countOverlappingBookings(roomTypeId, checkIn, checkOut) {
+async function countOverlappingBookings(roomTypeId, checkIn, checkOut) {
   const ci = parseDate(checkIn);
   const co = parseDate(checkOut);
   if (!ci || !co) return 0;
 
-  const reservations = getReservations();
+  const reservations = await getReservations();
   return reservations.filter(r => {
     if (r.roomTypeId !== roomTypeId) return false;
     // Cancelled bookings free up inventory
@@ -44,18 +47,18 @@ function countOverlappingBookings(roomTypeId, checkIn, checkOut) {
 /**
  * Check if a room type has availability for the given date range.
  *
- * @param {Object} roomType  Full room type object from data
+ * @param {Object} roomType  Full room type object from db
  * @param {string} checkIn
  * @param {string} checkOut
- * @returns {{ available: boolean, remainingRooms: number }}
+ * @returns {Promise<{ available: boolean, remainingRooms: number }>}
  */
-function checkRoomTypeAvailability(roomType, checkIn, checkOut) {
-  const booked = countOverlappingBookings(roomType.id, checkIn, checkOut);
+async function checkRoomTypeAvailability(roomType, checkIn, checkOut) {
+  const booked = await countOverlappingBookings(roomType.id, checkIn, checkOut);
   const remaining = roomType.inventory - booked;
   return {
-    available: remaining > 0,
+    available:      remaining > 0,
     remainingRooms: Math.max(0, remaining),
-    bookedRooms: booked,
+    bookedRooms:    booked,
     totalInventory: roomType.inventory
   };
 }
@@ -67,45 +70,61 @@ function checkRoomTypeAvailability(roomType, checkIn, checkOut) {
  * @param {string} checkOut
  * @param {number} adults
  * @param {number} children
- * @returns {Array} Available room types with availability metadata
+ * @returns {Promise<Array>} Available room types with availability metadata
  */
-function getAvailableRooms(checkIn, checkOut, adults = 1, children = 0) {
-  const roomTypes = getRoomTypes().filter(rt => rt.active);
+async function getAvailableRooms(checkIn, checkOut, adults = 1, children = 0) {
+  const allRoomTypes = await getRoomTypes();
+  const roomTypes = allRoomTypes.filter(rt => rt.active);
 
-  return roomTypes
-    .map(rt => {
-      const avail = checkRoomTypeAvailability(rt, checkIn, checkOut);
+  // Run all availability checks in parallel (one DB call each would be
+  // expensive; we already fetched all reservations above via
+  // countOverlappingBookings → getReservations).
+  // Note: getReservations() is called once per countOverlappingBookings().
+  // For a future optimisation, pass reservations as a param.
+  // For now: correctness matches the original JSON version exactly.
+  const results = await Promise.all(
+    roomTypes.map(async rt => {
+      const avail = await checkRoomTypeAvailability(rt, checkIn, checkOut);
       return {
         ...rt,
         availability: avail,
         fitsGuests: (adults <= rt.maxAdults) && ((adults + children) <= rt.maxGuests)
       };
     })
+  );
+
+  return results
     .filter(rt => rt.availability.available && rt.fitsGuests)
     .sort((a, b) => a.basePrice - b.basePrice);
 }
 
 /**
  * Validate that a specific room type is still available just before booking.
- * This is the "final check" to prevent race conditions.
- * Called at reservation creation time with the exact same inputs.
+ * This is the "final check" to prevent race conditions (the true atomic
+ * protection is inside create_reservation_atomic() on the DB side).
  *
- * @returns {{ ok: boolean, reason?: string }}
+ * @returns {Promise<{ ok: boolean, reason?: string, roomType?: Object }>}
  */
-function validateFinalAvailability(roomTypeId, checkIn, checkOut, adults, children) {
-  const roomTypes = getRoomTypes();
+async function validateFinalAvailability(roomTypeId, checkIn, checkOut, adults, children) {
+  const roomTypes = await getRoomTypes();
   const rt = roomTypes.find(r => r.id === roomTypeId);
 
   if (!rt) return { ok: false, reason: 'Room type not found.' };
   if (!rt.active) return { ok: false, reason: 'This room type is not currently available.' };
 
-  const avail = checkRoomTypeAvailability(rt, checkIn, checkOut);
+  const avail = await checkRoomTypeAvailability(rt, checkIn, checkOut);
   if (!avail.available) {
-    return { ok: false, reason: 'This room is no longer available for your selected dates. Please choose different dates or another room.' };
+    return {
+      ok:     false,
+      reason: 'This room is no longer available for your selected dates. Please choose different dates or another room.'
+    };
   }
 
   if (adults > rt.maxAdults || (adults + children) > rt.maxGuests) {
-    return { ok: false, reason: `This room accommodates a maximum of ${rt.maxAdults} adults and ${rt.maxGuests} guests total.` };
+    return {
+      ok:     false,
+      reason: `This room accommodates a maximum of ${rt.maxAdults} adults and ${rt.maxGuests} guests total.`
+    };
   }
 
   return { ok: true, roomType: rt };
@@ -114,6 +133,7 @@ function validateFinalAvailability(roomTypeId, checkIn, checkOut, adults, childr
 /**
  * Calculate pricing for a reservation.
  * ALWAYS calculated server-side — never trust client-provided prices.
+ * Remains synchronous (pure math — no DB calls).
  *
  * @param {number} basePrice   Per-night price from room type
  * @param {number} nights      Number of nights
@@ -129,15 +149,17 @@ function calculatePricing(basePrice, nights, taxRate = 0.12) {
 
 /**
  * Get occupancy statistics for the admin dashboard.
- * @returns {{ totalRooms, occupiedToday, availableToday, arrivalsToday, departuresToday }}
+ * @returns {Promise<{ totalRooms, occupiedToday, availableToday, arrivalsToday, departuresToday, ... }>}
  */
-function getOccupancyStats() {
+async function getOccupancyStats() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayStr = today.toISOString().split('T')[0];
 
-  const reservations = getReservations();
-  const roomTypes    = getRoomTypes();
+  const [reservations, roomTypes] = await Promise.all([
+    getReservations(),
+    getRoomTypes()
+  ]);
 
   const totalRooms = roomTypes.reduce((sum, rt) => sum + (rt.active ? rt.inventory : 0), 0);
 
@@ -158,18 +180,18 @@ function getOccupancyStats() {
     return r.checkOut === todayStr;
   });
 
-  const pendingReservations = reservations.filter(r => r.status === 'pending');
+  const pendingReservations   = reservations.filter(r => r.status === 'pending');
   const confirmedReservations = reservations.filter(r => r.status === 'confirmed');
 
   return {
     totalRooms,
-    occupiedToday: activeToday.length,
-    availableToday: Math.max(0, totalRooms - activeToday.length),
-    occupancyRate: totalRooms > 0 ? Math.round((activeToday.length / totalRooms) * 100) : 0,
-    arrivalsToday: arrivalsToday.length,
-    departuresToday: departuresToday.length,
-    pendingCount: pendingReservations.length,
-    confirmedCount: confirmedReservations.length,
+    occupiedToday:    activeToday.length,
+    availableToday:   Math.max(0, totalRooms - activeToday.length),
+    occupancyRate:    totalRooms > 0 ? Math.round((activeToday.length / totalRooms) * 100) : 0,
+    arrivalsToday:    arrivalsToday.length,
+    departuresToday:  departuresToday.length,
+    pendingCount:     pendingReservations.length,
+    confirmedCount:   confirmedReservations.length,
     activeReservations: activeToday
   };
 }

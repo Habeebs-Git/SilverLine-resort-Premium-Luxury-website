@@ -19,20 +19,21 @@ module.exports = async function handler(req, res) {
     if (!user) return;
 
     try {
-      const roomTypes = getRoomTypes();
-      const today = new Date().toISOString().split('T')[0];
+      const roomTypes = await getRoomTypes();
+      const today    = new Date().toISOString().split('T')[0];
       const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
 
-      const result = roomTypes.map(rt => {
-        const avail = checkRoomTypeAvailability(rt, today, tomorrow);
-        return {
-          ...rt,
-          todayAvailability: avail
-        };
-      });
+      // Check today's availability for each room type in parallel
+      const result = await Promise.all(
+        roomTypes.map(async rt => {
+          const avail = await checkRoomTypeAvailability(rt, today, tomorrow);
+          return { ...rt, todayAvailability: avail };
+        })
+      );
 
       return res.status(200).json({ roomTypes: result });
     } catch (err) {
+      console.error('[admin/rooms] Error:', err.message);
       return res.status(500).json({ error: 'Unable to load rooms.' });
     }
   }
@@ -75,14 +76,14 @@ module.exports = async function handler(req, res) {
         return res.status(400).json({ error: 'No valid fields to update.' });
       }
 
-      const updated = updateRoomType(id, updates);
+      const updated = await updateRoomType(id, updates);
       if (!updated) return res.status(404).json({ error: 'Room type not found.' });
 
       if (updates.basePrice !== undefined) {
         syncPricing(id, updates.basePrice);
       }
 
-      appendAuditLog({
+      await appendAuditLog({
         userId:     user.id,
         action:     'ROOM_TYPE_UPDATED',
         resource:   'room_type',

@@ -17,7 +17,7 @@ module.exports = async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const settings = getSettings();
+      const settings = await getSettings();
       // Return hotel, pricing, notifications — omit OTA keys and payment secrets
       return res.status(200).json({ settings: {
         hotel:         settings.hotel         || {},
@@ -29,7 +29,7 @@ module.exports = async function handler(req, res) {
     // Accept both PATCH and PUT for compatibility
     if (req.method === 'PATCH' || req.method === 'PUT') {
       const { hotel, pricing } = req.body || {};
-      const current = getSettings();
+      const current = await getSettings();
       const updates = {};
 
       if (hotel && typeof hotel === 'object') {
@@ -76,9 +76,9 @@ module.exports = async function handler(req, res) {
         return res.status(400).json({ error: 'No valid fields to update.' });
       }
 
-      const updated = updateSettings(updates);
+      const updated = await updateSettings(updates);
 
-      appendAuditLog({
+      await appendAuditLog({
         userId:   user.id,
         action:   'SETTINGS_UPDATED',
         resource: 'settings',

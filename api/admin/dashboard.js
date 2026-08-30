@@ -20,13 +20,16 @@ module.exports = async function handler(req, res) {
   if (!user) return;
 
   try {
-    const reservations = getReservations();
-    const roomTypes    = getRoomTypes();
-    const guests       = getGuests();
-    const settings     = getSettings();
+    // Run all 4 independent reads in parallel
+    const [reservations, roomTypes, guests, settings] = await Promise.all([
+      getReservations(),
+      getRoomTypes(),
+      getGuests(),
+      getSettings()
+    ]);
 
-    // ── Occupancy stats
-    const occupancy = getOccupancyStats();
+    // ── Occupancy stats (makes its own internal DB calls)
+    const occupancy = await getOccupancyStats();
 
     // ── Revenue calculations
     const today = new Date();
@@ -80,14 +83,14 @@ module.exports = async function handler(req, res) {
 
     return res.status(200).json({
       occupancy: {
-        total:        occupancy.totalRooms,
-        occupied:     occupancy.occupiedToday,
-        available:    occupancy.availableToday,
-        rate:         occupancy.occupancyRate,
-        arrivalsToday: occupancy.arrivalsToday,
+        total:           occupancy.totalRooms,
+        occupied:        occupancy.occupiedToday,
+        available:       occupancy.availableToday,
+        rate:            occupancy.occupancyRate,
+        arrivalsToday:   occupancy.arrivalsToday,
         departuresToday: occupancy.departuresToday,
-        pendingCount: occupancy.pendingCount,
-        confirmedCount: occupancy.confirmedCount
+        pendingCount:    occupancy.pendingCount,
+        confirmedCount:  occupancy.confirmedCount
       },
       revenue: {
         today:   revenueFor(today),

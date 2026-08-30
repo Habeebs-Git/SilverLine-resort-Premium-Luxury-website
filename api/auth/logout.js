@@ -18,7 +18,7 @@ module.exports = async function handler(req, res) {
   try {
     const user = getAuthUser(req);
     if (user) {
-      appendAuditLog({
+      await appendAuditLog({
         userId:   user.id,
         action:   'LOGOUT',
         resource: 'auth',
