@@ -716,32 +716,104 @@ async function submitReservation() {
       specialRequests: state.specialRequests
     };
 
-    const res = await fetch('/api/reservations', {
+    if (overlayMsg) overlayMsg.textContent = 'Generating payment order…';
+
+    // 1. Fetch Order from /api/orders
+    const orderRes = await fetch('/api/orders', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(body)
     });
 
-    const data = await res.json();
+    const orderData = await orderRes.json();
 
-    if (!res.ok) {
-      throw new Error(data.error || 'Reservation failed.');
+    if (!orderRes.ok) {
+      throw new Error(orderData.error || 'Could not create order.');
     }
 
-    if (overlayMsg) overlayMsg.textContent = 'Reservation confirmed!';
+    // 2. Load Razorpay script if not loaded
+    if (!window.Razorpay) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Failed to load Razorpay SDK'));
+        document.body.appendChild(script);
+      });
+    }
 
-    // Store in sessionStorage for the confirmation page
-    sessionStorage.setItem('slr_booking', JSON.stringify({
-      ...data.reservation,
-      roomImage: state.selectedRoom.image,
-      roomImageAlt: state.selectedRoom.imageAlt
-    }));
+    // Hide overlay while user interacts with Razorpay
+    if (overlay) overlay.classList.remove('is-active');
 
-    // Redirect to confirmation
-    setTimeout(() => {
-      // Use clean URL (vercel.json rewrites /booking-confirmation → html file)
-      window.location.href = '/booking-confirmation';
-    }, 800);
+    // 3. Open Razorpay Widget
+    const options = {
+      key: orderData.key_id,
+      amount: orderData.amount,
+      currency: orderData.currency,
+      name: 'Silverline Resort Ooty',
+      description: 'Room Reservation',
+      order_id: orderData.order_id,
+      prefill: {
+        name: state.guestName,
+        email: state.guestEmail,
+        contact: state.guestPhone
+      },
+      theme: {
+        color: '#2a5d4f'
+      },
+      handler: async function (response) {
+        try {
+          if (overlay) overlay.classList.add('is-active');
+          if (overlayMsg) overlayMsg.textContent = 'Confirming your reservation…';
+
+          // 4. Submit to /api/reservations to verify & finalize
+          const finalBody = {
+            ...body,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature
+          };
+
+          const res = await fetch('/api/reservations', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(finalBody)
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error || 'Reservation failed.');
+          }
+
+          if (overlayMsg) overlayMsg.textContent = 'Reservation confirmed!';
+
+          // Store in sessionStorage for the confirmation page
+          sessionStorage.setItem('slr_booking', JSON.stringify({
+            ...data.reservation,
+            roomImage: state.selectedRoom.image,
+            roomImageAlt: state.selectedRoom.imageAlt
+          }));
+
+          // Redirect to confirmation
+          setTimeout(() => {
+            window.location.href = '/booking-confirmation';
+          }, 800);
+
+        } catch (err) {
+          if (overlay) overlay.classList.remove('is-active');
+          if (confirmBtn) confirmBtn.disabled = false;
+          showError('step4-error', err.message || 'Payment verification failed.');
+        }
+      }
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.on('payment.failed', function (response){
+      if (confirmBtn) confirmBtn.disabled = false;
+      showError('step4-error', response.error.description || 'Payment failed. Please try again.');
+    });
+    rzp.open();
 
   } catch (err) {
     if (overlay) overlay.classList.remove('is-active');

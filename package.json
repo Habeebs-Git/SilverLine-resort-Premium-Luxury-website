@@ -16,6 +16,8 @@
     "bcryptjs": "^2.4.3",
     "cookie": "^0.6.0",
     "jsonwebtoken": "^9.0.2",
+    "razorpay": "^2.9.8",
+    "resend": "^6.25.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

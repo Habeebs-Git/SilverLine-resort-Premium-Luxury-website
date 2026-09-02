@@ -8,6 +8,7 @@
  * - Availability re-verified at booking time (prevents race conditions)
  * - Final atomic double-booking protection inside PostgreSQL RPC
  * - Booking reference generated server-side
+ * - Razorpay signature verification
  */
 
 'use strict';
@@ -16,8 +17,8 @@ const { v4: uuidv4 }                = require('uuid');
 const { validateReservationInput }  = require('./_lib/validation');
 const { validateFinalAvailability, calculatePricing } = require('./_lib/availability');
 const { createReservation, upsertGuest, createPaymentRecord, getSettings, getRoomTypeById, appendAuditLog } = require('./_lib/db');
-const { createPayment, verifyPayment }                = require('./_lib/payment-mock');
-const { sendBookingConfirmation, sendAdminNotification } = require('./_lib/email-mock');
+const { verifySignature }           = require('./_lib/payment');
+const { sendBookingConfirmation, sendAdminNotification } = require('./_lib/email');
 const { syncAvailability }          = require('./_lib/ota-adapters');
 
 function generateBookingRef() {
@@ -42,6 +43,18 @@ module.exports = async function handler(req, res) {
 
   try {
     const body = req.body || {};
+
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
+
+    // ── Step 0: Verify Razorpay Signature FIRST
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ error: 'Payment verification failed. Missing signature data.' });
+    }
+
+    const isSignatureValid = verifySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature);
+    if (!isSignatureValid) {
+      return res.status(402).json({ error: 'Payment verification failed. Invalid signature.' });
+    }
 
     // ── Get settings (tax rate, etc.)
     const settings = await getSettings();
@@ -79,25 +92,6 @@ module.exports = async function handler(req, res) {
       phone: guestPhone
     });
 
-    // ── Step 5: Create payment intent (mock in prototype)
-    const paymentIntent = createPayment({
-      amount:     pricing.total * 100, // paise
-      currency:   'INR',
-      bookingRef: '[pending]',
-      guestEmail
-    });
-
-    // ── Step 6: Verify payment (mock: auto-verifies in prototype)
-    const paymentVerify = verifyPayment({
-      orderId:   paymentIntent.orderId,
-      paymentId: paymentIntent.clientToken,
-      signature: 'MOCK_SIGNATURE'
-    });
-
-    if (!paymentVerify.verified) {
-      return res.status(402).json({ error: 'Payment verification failed. Please try again.' });
-    }
-
     // ── Step 7: Create reservation atomically via PostgreSQL RPC
     // The RPC handles: row-lock → overlap-count → INSERT reservation → INSERT payment
     // in a single transaction. This is the true double-booking protection.
@@ -131,14 +125,14 @@ module.exports = async function handler(req, res) {
         currency:         'INR',
         status:           'confirmed',
         paymentStatus:    'paid',
-        paymentProvider:  'mock',
-        paymentReference: paymentVerify.transactionId,
+        paymentProvider:  'razorpay',
+        paymentReference: razorpay_payment_id,
         createdAt: now,
         updatedAt: now,
         // Extra fields passed to the RPC (not stored on the reservation object itself)
         _paymentId:      paymentId,
-        _orderId:        paymentIntent.orderId,
-        _transactionId:  paymentVerify.transactionId,
+        _orderId:        razorpay_order_id,
+        _transactionId:  razorpay_payment_id,
         _amountPaise:    pricing.total * 100
       });
     } catch (rpcErr) {
@@ -154,9 +148,9 @@ module.exports = async function handler(req, res) {
       id:            paymentId,
       reservationId,
       bookingReference,
-      provider:       'mock',
-      orderId:        paymentIntent.orderId,
-      transactionId:  paymentVerify.transactionId,
+      provider:       'razorpay',
+      orderId:        razorpay_order_id,
+      transactionId:  razorpay_payment_id,
       amount:         pricing.total * 100,
       currency:       'INR',
       status:         'captured',
@@ -223,7 +217,7 @@ module.exports = async function handler(req, res) {
         },
         status:        'confirmed',
         paymentStatus: 'paid',
-        paymentMode:   'TEST — Mock Payment (No real charge)',
+        paymentMode:   'Razorpay (TEST MODE)',
         createdAt:     now
       }
     });
