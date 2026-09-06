@@ -89,11 +89,57 @@
         <div class="admin-page-subtitle">All room types and pricing</div>
       </div>
     </div>
+    <div class="admin-topbar-right">
+      <button class="btn-admin btn-admin-primary" id="btn-add-room">Add Room</button>
+    </div>
   </header>
 
   <div class="admin-content">
     <div id="rooms-loader" class="admin-loader"><div class="admin-spinner" aria-label="Loading…"></div></div>
     <div id="rooms-grid" class="admin-rooms-grid"></div>
+  </div>
+</div>
+
+<!-- Edit Room Modal -->
+<div class="admin-modal" id="room-modal" style="display:none; position:fixed; inset:0; z-index:999; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+  <div class="admin-modal-content" style="background:var(--charcoal); padding:2rem; width:100%; max-width:600px; border-radius:4px; max-height:90vh; overflow-y:auto;">
+    <h2 id="modal-title" style="margin-top:0;">Edit Room</h2>
+    <form id="room-form">
+      <input type="hidden" id="room-id">
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--stone);">Name</label>
+        <input type="text" id="room-name" class="admin-input" required>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--stone);">Image Path or URL</label>
+        <input type="text" id="room-image" class="admin-input" required placeholder="/images/room-xyz.jpg">
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+        <div>
+          <label style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--stone);">Base Price (₹)</label>
+          <input type="number" id="room-price" class="admin-input" required min="500">
+        </div>
+        <div>
+          <label style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--stone);">Inventory Count</label>
+          <input type="number" id="room-inventory" class="admin-input" required min="0">
+        </div>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--stone);">Short Description</label>
+        <textarea id="room-desc" class="admin-input" rows="2"></textarea>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--stone);">Active Status</label>
+        <select id="room-active" class="admin-input">
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:2rem;">
+        <button type="button" class="btn-admin btn-admin-ghost" id="btn-cancel-room">Cancel</button>
+        <button type="submit" class="btn-admin btn-admin-primary" id="btn-save-room">Save</button>
+      </div>
+    </form>
   </div>
 </div>
 

@@ -397,6 +397,12 @@ async function updateRoomType(id, updates) {
   if (updates.basePrice  !== undefined) dbUpdates.base_price = updates.basePrice;
   if (updates.inventory  !== undefined) dbUpdates.inventory  = updates.inventory;
   if (updates.active     !== undefined) dbUpdates.active      = updates.active;
+  if (updates.name !== undefined) dbUpdates.name = updates.name;
+  if (updates.image !== undefined) dbUpdates.image = updates.image;
+  if (updates.shortDescription !== undefined) dbUpdates.short_description = updates.shortDescription;
+  if (updates.bedConfiguration !== undefined) dbUpdates.bed_configuration = updates.bedConfiguration;
+  if (updates.roomSize !== undefined) dbUpdates.room_size = updates.roomSize;
+  if (updates.view !== undefined) dbUpdates.view = updates.view;
 
   const { data, error } = await supabase
     .from('room_types')
@@ -409,6 +415,28 @@ async function updateRoomType(id, updates) {
     if (error.code === 'PGRST116') return null;
     throw new Error(`[db] updateRoomType: ${error.message}`);
   }
+  return mapRoomType(data);
+}
+
+async function createRoomType(room) {
+  const dbRoom = {
+    name: room.name,
+    slug: room.slug,
+    image: room.image,
+    base_price: room.basePrice,
+    inventory: room.inventory,
+    active: room.active,
+    short_description: room.shortDescription,
+    bed_configuration: room.bedConfiguration,
+    room_size: room.roomSize,
+    view: room.view
+  };
+  const { data, error } = await supabase
+    .from('room_types')
+    .insert(dbRoom)
+    .select()
+    .single();
+  if (error) throw new Error(`[db] createRoomType: ${error.message}`);
   return mapRoomType(data);
 }
 
@@ -486,7 +514,7 @@ module.exports = {
   getGuests, getGuestById, getGuestByEmail, upsertGuest,
   getUsers, getUserByEmail, getUserById,
   getPayments, createPaymentRecord,
-  getRoomTypes, getRoomTypeById, updateRoomType,
+  getRoomTypes, getRoomTypeById, updateRoomType, createRoomType,
   getSettings, updateSettings,
   appendAuditLog
 };

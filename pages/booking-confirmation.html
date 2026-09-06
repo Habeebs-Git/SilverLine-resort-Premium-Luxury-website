@@ -419,12 +419,333 @@
       margin-bottom: 1.5rem;
     }
 
-    /* Responsive */
+    /* ── Email / long-text overflow protection ── */
+    .conf-guest-detail span {
+      word-break: break-all;
+      overflow-wrap: break-word;
+      min-width: 0;
+    }
+
+    .conf-guest-card {
+      overflow: hidden;
+    }
+
+    .conf-ref-display {
+      max-width: 100%;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .conf-ref-value {
+      word-break: break-all;
+      overflow-wrap: break-word;
+    }
+
+    .conf-pricing-row {
+      min-width: 0;
+    }
+
+    .conf-pricing-row .label {
+      flex-shrink: 1;
+      min-width: 0;
+      overflow-wrap: break-word;
+    }
+
+    .conf-pricing-row .value {
+      flex-shrink: 0;
+      text-align: right;
+    }
+
+    .conf-card-body,
+    .conf-guest-card,
+    .conf-main {
+      box-sizing: border-box;
+    }
+
+    /* ── Responsive ── */
     @media (max-width: 640px) {
       .conf-main { padding: 2rem 1.25rem 3rem; }
       .conf-detail-grid { grid-template-columns: 1fr 1fr; }
       .conf-actions { flex-direction: column; }
       .conf-card-room-img { height: 160px; }
+    }
+
+    @media (max-width: 360px) {
+      .conf-main { padding: 1.5rem 1rem 2.5rem; }
+      .conf-detail-grid { grid-template-columns: 1fr; }
+      .conf-title { font-size: 1.7rem; }
+      .conf-card-body { padding: 1.25rem; }
+      .conf-guest-card { padding: 1.15rem; }
+      .conf-ref-display { padding: 0.5rem 0.85rem; gap: 0.5rem; }
+      .conf-ref-value { font-size: 0.85rem; }
+      .conf-room-name { font-size: 1.25rem; }
+    }
+
+    /* ── Print Stylesheet — A4 Optimized ── */
+    @media print {
+      /* --- Reset to light theme for print --- */
+      *,
+      *::before,
+      *::after {
+        background: transparent !important;
+        color: #1a1a1a !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+        border-color: #d0d0d0 !important;
+      }
+
+      html, body, .conf-page {
+        background: #fff !important;
+        color: #1a1a1a !important;
+        min-height: auto;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      body {
+        font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+        font-size: 11pt;
+        line-height: 1.5;
+        letter-spacing: 0.01em;
+        orphans: 3;
+        widows: 3;
+      }
+
+      /* --- Print-safe display font --- */
+      .conf-title,
+      .conf-room-name,
+      .conf-pricing-row.is-total .value {
+        font-family: Georgia, 'Times New Roman', serif !important;
+        -webkit-font-smoothing: auto;
+      }
+
+      /* --- Hide non-printable elements --- */
+      .conf-header,
+      .conf-ref-copy,
+      .conf-payment-notice,
+      .conf-actions,
+      .conf-success-icon,
+      .conf-checklist li svg,
+      .conf-guest-detail svg,
+      #conf-print-btn {
+        display: none !important;
+      }
+
+      /* --- Print-only resort header --- */
+      .conf-headline::before {
+        content: "SILVERLINE RESORT";
+        display: block;
+        text-align: center;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 14pt;
+        font-weight: 400;
+        letter-spacing: 0.35em;
+        text-transform: uppercase;
+        color: #333 !important;
+        margin-bottom: 4px;
+      }
+
+      .conf-headline::after {
+        content: "Balacola, Ooty · Tamil Nadu 643003";
+        display: block;
+        text-align: center;
+        font-size: 8pt;
+        letter-spacing: 0.15em;
+        color: #888 !important;
+        margin-bottom: 18px;
+      }
+
+      /* --- Layout --- */
+      .conf-main {
+        max-width: 100%;
+        padding: 0;
+        margin: 0;
+      }
+
+      #conf-success {
+        padding: 10mm 15mm;
+      }
+
+      /* --- Title --- */
+      .conf-title {
+        font-size: 20pt;
+        margin-bottom: 4px;
+        color: #1a1a1a !important;
+      }
+
+      .conf-subtitle {
+        font-size: 9pt;
+        color: #666 !important;
+        margin-bottom: 12px;
+      }
+
+      /* --- Booking Reference --- */
+      .conf-ref-display {
+        border: 2px solid #333 !important;
+        border-radius: 4px;
+        padding: 8px 18px;
+        margin-bottom: 20px;
+        display: inline-flex;
+      }
+
+      .conf-ref-label {
+        font-size: 7pt;
+        letter-spacing: 0.3em;
+        color: #666 !important;
+      }
+
+      .conf-ref-value {
+        font-family: 'Courier New', Courier, monospace !important;
+        font-size: 13pt;
+        font-weight: 700;
+        color: #1a1a1a !important;
+        letter-spacing: 0.1em;
+      }
+
+      /* --- Room card --- */
+      .conf-card {
+        border: 1px solid #d0d0d0 !important;
+        border-radius: 0;
+        page-break-inside: avoid;
+        margin-bottom: 14px;
+      }
+
+      .conf-card-room-img {
+        max-height: 120px;
+        object-fit: cover;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .conf-card-body {
+        padding: 14px 18px;
+      }
+
+      .conf-room-eyebrow {
+        font-size: 7pt;
+        letter-spacing: 0.3em;
+        color: #888 !important;
+      }
+
+      .conf-room-name {
+        font-size: 15pt;
+        color: #1a1a1a !important;
+        margin-bottom: 10px;
+      }
+
+      /* --- Detail grid --- */
+      .conf-detail-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+
+      .conf-detail-label {
+        font-size: 7pt;
+        letter-spacing: 0.22em;
+        color: #888 !important;
+        margin-bottom: 2px;
+      }
+
+      .conf-detail-value {
+        font-size: 10pt;
+        color: #1a1a1a !important;
+      }
+
+      .conf-detail-sub {
+        font-size: 8pt;
+        color: #888 !important;
+      }
+
+      /* --- Divider --- */
+      .conf-divider {
+        border-top: 1px solid #ddd !important;
+        margin: 10px 0;
+      }
+
+      /* --- Pricing --- */
+      .conf-pricing-row {
+        font-size: 10pt;
+        padding: 3px 0;
+      }
+
+      .conf-pricing-row .label {
+        color: #555 !important;
+      }
+
+      .conf-pricing-row .value {
+        color: #1a1a1a !important;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .conf-pricing-row.is-total {
+        border-top: 2px solid #333 !important;
+        padding-top: 8px;
+        margin-top: 6px;
+      }
+
+      .conf-pricing-row.is-total .label {
+        font-size: 10pt;
+        font-weight: 600;
+        color: #1a1a1a !important;
+      }
+
+      .conf-pricing-row.is-total .value {
+        font-size: 14pt;
+        font-weight: 600;
+        color: #1a1a1a !important;
+      }
+
+      /* --- Guest info --- */
+      .conf-guest-card {
+        border: 1px solid #d0d0d0 !important;
+        border-radius: 0;
+        padding: 12px 18px;
+        margin-bottom: 12px;
+        page-break-inside: avoid;
+      }
+
+      .conf-section-eyebrow {
+        font-size: 7pt;
+        letter-spacing: 0.3em;
+        color: #888 !important;
+        margin-bottom: 8px;
+      }
+
+      .conf-guest-detail {
+        font-size: 10pt;
+        color: #1a1a1a !important;
+        padding: 2px 0;
+      }
+
+      .conf-guest-detail span {
+        word-break: break-all;
+        overflow-wrap: break-word;
+      }
+
+      /* --- Checklist --- */
+      .conf-checklist li {
+        font-size: 9pt;
+        color: #555 !important;
+        padding: 2px 0;
+      }
+
+      /* --- Find Us / Directions --- */
+      .conf-guest-card a.conf-btn-ghost {
+        display: none !important;
+      }
+
+      /* --- Disable all animations --- */
+      .conf-check-circle-border,
+      .conf-check-path {
+        animation: none !important;
+        stroke-dashoffset: 0 !important;
+      }
+
+      /* --- Page settings --- */
+      @page {
+        size: A4;
+        margin: 12mm 10mm;
+      }
     }
   </style>
 </head>

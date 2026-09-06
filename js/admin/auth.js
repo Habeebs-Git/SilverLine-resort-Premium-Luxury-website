@@ -64,6 +64,12 @@ function populateSidebarUser(user) {
   if (roleEl)   roleEl.textContent   = user.role  === 'admin' ? 'Administrator' : 'Front Desk';
   if (avatarEl) avatarEl.textContent = (user.name || user.email || 'A')[0].toUpperCase();
 
+  // RBAC: Hide sensitive admin-only controls from staff
+  if (user.role !== 'admin') {
+    const settingsNav = document.getElementById('nav-settings');
+    if (settingsNav) settingsNav.style.display = 'none';
+  }
+
   // Update nav badge if pending count is available
   updatePendingBadge();
 }

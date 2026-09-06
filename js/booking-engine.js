@@ -230,6 +230,9 @@ function initStep1() {
   if (ciInput) {
     ciInput.addEventListener('change', () => {
       state.checkIn = ciInput.value || null;
+      // Dates changed — invalidate previous room selection & availability
+      state.selectedRoom = null;
+      state.availabilityData = null;
       if (coInput) {
         // Check-out must be at least next day
         const nextDay = new Date(ciInput.value);
@@ -250,6 +253,9 @@ function initStep1() {
   if (coInput) {
     coInput.addEventListener('change', () => {
       state.checkOut = coInput.value || null;
+      // Dates changed — invalidate previous room selection & availability
+      state.selectedRoom = null;
+      state.availabilityData = null;
       if (state.checkIn && state.checkOut) {
         state.nights = diffDays(state.checkIn, state.checkOut);
       }
@@ -325,13 +331,20 @@ async function handleStep1Next() {
     return;
   }
 
+  // Clear any stale room selection from a previous flow
+  state.selectedRoom = null;
+  state.availabilityData = null;
+
   // Animate button
   const btn = $('step1-next');
   btn.disabled = true;
   btn.textContent = 'Checking availability…';
 
+  // Start fetch BEFORE panel transition so network request runs in parallel
+  // with the CSS animation, reducing perceived load time
+  const roomsPromise = loadRooms();
   goToStep(2);
-  await loadRooms();
+  await roomsPromise;
 
   btn.disabled = false;
   btn.innerHTML = 'Check Availability <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
@@ -471,10 +484,19 @@ function selectRoom(rooms, roomId) {
 
 function initStep2() {
   const backBtn = $('step2-back');
-  if (backBtn) backBtn.addEventListener('click', () => goToStep(1));
+  if (backBtn) backBtn.addEventListener('click', () => {
+    // Clear room selection when going back — forces fresh search on next forward
+    state.selectedRoom = null;
+    state.availabilityData = null;
+    goToStep(1);
+  });
 
   const emptyBack = $('rooms-empty-back');
-  if (emptyBack) emptyBack.addEventListener('click', () => goToStep(1));
+  if (emptyBack) emptyBack.addEventListener('click', () => {
+    state.selectedRoom = null;
+    state.availabilityData = null;
+    goToStep(1);
+  });
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -817,7 +839,6 @@ async function submitReservation() {
 
   } catch (err) {
     if (overlay) overlay.classList.remove('is-active');
-    if (confirmBtn) confirmBtn.disabled = false;
     showError('step4-error', err.message || 'Your reservation could not be completed. Please try again or call us.');
     console.error('[booking] submitReservation error:', err);
   }

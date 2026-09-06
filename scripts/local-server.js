@@ -1,4 +1,6 @@
-﻿"use strict";
+"use strict";
+// Load .env before anything else so API handlers have access to environment variables
+try{require("fs").readFileSync(require("path").join(__dirname,"../.env"),"utf8").split("\n").forEach(l=>{const t=l.trim();if(!t||t.startsWith("#"))return;const eq=t.indexOf("=");if(eq<1)return;const k=t.slice(0,eq).trim(),v=t.slice(eq+1).trim();if(k&&!process.env[k])process.env[k]=v;});}catch(_){}
 const http=require("http"),fs=require("fs"),path=require("path"),url=require("url");
 const PORT=3000,ROOT=path.join(__dirname,"..");
 const MIME={".html":"text/html; charset=utf-8",".js":"application/javascript; charset=utf-8",".css":"text/css; charset=utf-8",".json":"application/json",".svg":"image/svg+xml",".png":"image/png",".jpg":"image/jpeg",".jpeg":"image/jpeg",".webp":"image/webp",".ico":"image/x-icon",".txt":"text/plain",".xml":"application/xml",".webmanifest":"application/manifest+json"};

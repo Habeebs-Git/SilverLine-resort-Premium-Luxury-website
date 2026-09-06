@@ -91,6 +91,10 @@ async function saveSettings() {
 document.addEventListener('DOMContentLoaded', async () => {
   const user = await window.adminAuth.guardSession();
   if (!user) return;
+  if (user.role !== 'admin') {
+    window.location.href = '/admin/dashboard';
+    return;
+  }
 
   await loadSettings();
 
