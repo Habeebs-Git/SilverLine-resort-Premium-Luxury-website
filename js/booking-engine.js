@@ -1,7 +1,7 @@
 /**
  * SILVERLINE RESORT — Booking Engine (Guest-Facing)
  * Multi-step booking flow:  Step 1 → Dates & Guests
- *                           Step 2 → Room Selection
+ *                           Step 2 → Room Selection (multi-room with qty controls)
  *                           Step 3 → Guest Details
  *                           Step 4 → Review & Confirm
  *
@@ -22,13 +22,81 @@ const state = {
   nights:      0,
   adults:      2,
   children:    0,
-  selectedRoom: null,       // full room object from API
+  selectedRoom: null,       // legacy: single room object (kept for backward compat)
+  selectedRooms: {},        // multi-room: { roomTypeId: { room, quantity } }
   guestName:   '',
   guestEmail:  '',
   guestPhone:  '',
   specialRequests: '',
   availabilityData: null    // full response from /api/availability
 };
+
+// Only the latest availability search is allowed to update the room list.
+// This prevents a late response from a prior search from restoring stale prices
+// after the guest changes dates or navigates back.
+let availabilityRequest = null;
+
+function invalidateAvailability() {
+  if (availabilityRequest) {
+    availabilityRequest.abort();
+    availabilityRequest = null;
+  }
+  state.selectedRoom = null;
+  state.selectedRooms = {};
+  state.availabilityData = null;
+}
+
+/**
+ * Get selected rooms as an array of { roomTypeId, quantity, room }
+ */
+function getSelectedRoomsList() {
+  return Object.values(state.selectedRooms).filter(s => s.quantity > 0);
+}
+
+/**
+ * Get total room count across all types
+ */
+function getTotalRoomCount() {
+  return getSelectedRoomsList().reduce((sum, s) => sum + s.quantity, 0);
+}
+
+/**
+ * Calculate combined pricing from selected rooms
+ */
+function getCombinedPricing() {
+  const items = getSelectedRoomsList();
+  if (items.length === 0) return null;
+
+  let subtotal = 0;
+  let taxes = 0;
+  const lineItems = [];
+
+  for (const { room, quantity } of items) {
+    if (!room.pricing) continue;
+    const p = room.pricing;
+    const lineSubtotal = p.subtotal * quantity;
+    const lineTaxes    = p.taxes * quantity;
+    subtotal += lineSubtotal;
+    taxes    += lineTaxes;
+    lineItems.push({
+      roomTypeId:   room.id,
+      roomTypeName: room.name,
+      basePrice:    room.basePrice,
+      quantity,
+      nights:       p.nights,
+      lineSubtotal,
+      lineTaxes,
+      lineTotal:    lineSubtotal + lineTaxes
+    });
+  }
+
+  return {
+    lineItems,
+    subtotal,
+    taxes,
+    total: subtotal + taxes
+  };
+}
 
 /* ─────────────────────────────────────────────────────────────────────────────
    UTILITIES
@@ -124,7 +192,7 @@ function goToStep(n, animate = true) {
    SUMMARY SIDEBAR
 ───────────────────────────────────────────────────────────────────────────── */
 function updateSummary() {
-  const hasRoom = !!state.selectedRoom;
+  const totalRooms = getTotalRoomCount();
   const hasDates = !!(state.checkIn && state.checkOut);
 
   if (!hasDates) {
@@ -138,12 +206,13 @@ function updateSummary() {
   show('summary-content');
 
   // Room
-  if (hasRoom) {
-    const r = state.selectedRoom;
-    setHTML('summary-room', `
-      <div class="bk-summary-room-name">${r.name}</div>
-      <div class="bk-summary-room-size">${r.bedConfiguration}${r.roomSize ? ' · ' + r.roomSize : ''}</div>
-    `);
+  if (totalRooms > 0) {
+    const items = getSelectedRoomsList();
+    const roomLines = items.map(s =>
+      `<div class="bk-summary-room-name">${s.room.name}${s.quantity > 1 ? ' × ' + s.quantity : ''}</div>
+       <div class="bk-summary-room-size">${s.room.bedConfiguration}${s.room.roomSize ? ' · ' + s.room.roomSize : ''}</div>`
+    ).join('');
+    setHTML('summary-room', roomLines);
   } else {
     setHTML('summary-room', `<div class="bk-summary-room-placeholder">Choose a room below</div>`);
   }
@@ -173,25 +242,37 @@ function updateSummary() {
   `);
 
   // Pricing
-  if (hasRoom && state.selectedRoom.pricing) {
-    const p = state.selectedRoom.pricing;
+  const combined = getCombinedPricing();
+  if (combined && combined.lineItems.length > 0) {
     const taxLabel = (state.availabilityData && state.availabilityData.taxRate)
       ? `GST (${Math.round(state.availabilityData.taxRate * 100)}%)`
       : 'GST (12%)';
-    setHTML('summary-pricing', `
-      <div class="bk-summary-price-row">
-        <span>${INR(p.basePrice)} × ${nightLabel(p.nights)}</span>
-        <span>${INR(p.subtotal)}</span>
-      </div>
+
+    let pricingHtml = '';
+    for (const li of combined.lineItems) {
+      const label = li.quantity > 1
+        ? `${INR(li.basePrice)} × ${nightLabel(li.nights)} × ${li.quantity} rooms`
+        : `${INR(li.basePrice)} × ${nightLabel(li.nights)}`;
+      pricingHtml += `
+        <div class="bk-summary-price-row">
+          <span>${li.roomTypeName}</span>
+          <span>${INR(li.lineSubtotal)}</span>
+        </div>
+        <div class="bk-summary-price-row is-detail">
+          <span>${label}</span>
+          <span></span>
+        </div>`;
+    }
+    pricingHtml += `
       <div class="bk-summary-price-row is-tax">
         <span>${taxLabel}</span>
-        <span>${INR(p.taxes)}</span>
+        <span>${INR(combined.taxes)}</span>
       </div>
       <div class="bk-summary-price-row is-total">
         <span>Total</span>
-        <span>${INR(p.total)}</span>
-      </div>
-    `);
+        <span>${INR(combined.total)}</span>
+      </div>`;
+    setHTML('summary-pricing', pricingHtml);
   } else {
     setHTML('summary-pricing', '');
   }
@@ -201,16 +282,23 @@ function updateSummary() {
 
 function updateMobileSummary(hasDates) {
   const shortEl = $('mobile-summary-short');
+  const mobileBody = $('mobile-summary-body');
   if (!shortEl) return;
   if (!hasDates) {
     shortEl.textContent = 'View booking summary';
+    if (mobileBody) mobileBody.innerHTML = '';
     return;
   }
-  if (state.selectedRoom && state.selectedRoom.pricing) {
-    shortEl.textContent = `${state.selectedRoom.name} · ${INR(state.selectedRoom.pricing.total)}`;
+  const totalRooms = getTotalRoomCount();
+  const combined = getCombinedPricing();
+  if (totalRooms > 0 && combined) {
+    const items = getSelectedRoomsList();
+    const names = items.map(s => s.room.name + (s.quantity > 1 ? ' ×' + s.quantity : '')).join(', ');
+    shortEl.textContent = `${names} · ${INR(combined.total)}`;
   } else {
     shortEl.textContent = `${fmtDate(state.checkIn)} → ${nightLabel(state.nights)}`;
   }
+  if (mobileBody) mobileBody.innerHTML = $('summary-content')?.innerHTML || '';
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -231,8 +319,7 @@ function initStep1() {
     ciInput.addEventListener('change', () => {
       state.checkIn = ciInput.value || null;
       // Dates changed — invalidate previous room selection & availability
-      state.selectedRoom = null;
-      state.availabilityData = null;
+      invalidateAvailability();
       if (coInput) {
         // Check-out must be at least next day
         const nextDay = new Date(ciInput.value);
@@ -254,8 +341,7 @@ function initStep1() {
     coInput.addEventListener('change', () => {
       state.checkOut = coInput.value || null;
       // Dates changed — invalidate previous room selection & availability
-      state.selectedRoom = null;
-      state.availabilityData = null;
+      invalidateAvailability();
       if (state.checkIn && state.checkOut) {
         state.nights = diffDays(state.checkIn, state.checkOut);
       }
@@ -332,8 +418,7 @@ async function handleStep1Next() {
   }
 
   // Clear any stale room selection from a previous flow
-  state.selectedRoom = null;
-  state.availabilityData = null;
+  invalidateAvailability();
 
   // Animate button
   const btn = $('step1-next');
@@ -351,13 +436,29 @@ async function handleStep1Next() {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   STEP 2: ROOM SELECTION
+   STEP 2: ROOM SELECTION (Multi-Room)
 ───────────────────────────────────────────────────────────────────────────── */
 async function loadRooms() {
-  // Show loading
-  show('rooms-loading');
-  hide('rooms-empty');
+  // Cancel a pending search before issuing a replacement request.
+  if (availabilityRequest) availabilityRequest.abort();
+  const controller = new AbortController();
+  availabilityRequest = controller;
+  const search = {
+    checkIn: state.checkIn,
+    checkOut: state.checkOut,
+    adults: state.adults,
+    children: state.children
+  };
+
+  // Show loading (these elements use CSS display:none, not hidden attr)
+  const loadingEl = $('rooms-loading');
+  const emptyEl = $('rooms-empty');
+  if (loadingEl) loadingEl.style.display = '';
+  if (emptyEl) emptyEl.style.display = 'none';
   setHTML('rooms-list', '');
+  // Remove stale continue button from previous render
+  const oldContinue = document.getElementById('rooms-continue');
+  if (oldContinue) oldContinue.remove();
   clearError('step2-error');
 
   // Update subtitle
@@ -367,11 +468,16 @@ async function loadRooms() {
   }
 
   try {
-    const url = `/api/availability?checkIn=${state.checkIn}&checkOut=${state.checkOut}&adults=${state.adults}&children=${state.children}`;
-    const res = await fetch(url);
+    const url = `/api/availability?checkIn=${search.checkIn}&checkOut=${search.checkOut}&adults=${search.adults}&children=${search.children}`;
+    const res = await fetch(url, { signal: controller.signal });
     const data = await res.json();
 
-    hide('rooms-loading');
+    // Ignore a response that no longer belongs to the visible search.
+    if (availabilityRequest !== controller ||
+        state.checkIn !== search.checkIn || state.checkOut !== search.checkOut ||
+        state.adults !== search.adults || state.children !== search.children) return;
+
+    if (loadingEl) loadingEl.style.display = 'none';
 
     if (!res.ok) {
       showError('step2-error', data.error || 'Unable to check availability. Please try again.');
@@ -381,16 +487,19 @@ async function loadRooms() {
     state.availabilityData = data;
 
     if (!data.rooms || data.rooms.length === 0) {
-      show('rooms-empty');
+      if (emptyEl) emptyEl.style.display = '';
       return;
     }
 
     renderRooms(data.rooms, data.nights);
 
   } catch (err) {
-    hide('rooms-loading');
+    if (err.name === 'AbortError') return;
+    if (loadingEl) loadingEl.style.display = 'none';
     showError('step2-error', 'Network error. Please check your connection and try again.');
     console.error('[booking] loadRooms error:', err);
+  } finally {
+    if (availabilityRequest === controller) availabilityRequest = null;
   }
 }
 
@@ -411,8 +520,15 @@ function renderRooms(rooms, nights) {
       `<span class="bk-room-amenity">${a}</span>`
     ).join('');
 
+    // Capacity info
+    const capacityInfo = `Max ${room.maxAdults} adults · ${room.maxGuests} guests per room`;
+
+    // Current selection quantity for this room type
+    const currentQty = state.selectedRooms[room.id]?.quantity || 0;
+    const maxQty = remaining || 0;
+
     return `
-      <article class="bk-room-card" role="listitem" data-room-id="${room.id}" tabindex="0"
+      <article class="bk-room-card${currentQty > 0 ? ' is-selected' : ''}" role="listitem" data-room-id="${room.id}" tabindex="0"
                aria-label="${room.name} — ${INR(room.basePrice)} per night">
         <div class="bk-room-img-wrap">
           <img src="${room.image || '/images/room-deluxe-balcony-9400.jpg'}"
@@ -427,6 +543,7 @@ function renderRooms(rooms, nights) {
           </div>
           <h3 class="bk-room-name">${room.name}</h3>
           <p class="bk-room-desc">${room.shortDescription || room.description || ''}</p>
+          <div class="bk-room-capacity">${capacityInfo}</div>
           <div class="bk-room-amenities">${amenityPills}</div>
           <div class="bk-room-footer">
             <div class="bk-room-price">
@@ -434,67 +551,127 @@ function renderRooms(rooms, nights) {
               <span class="bk-room-price-unit">/ night</span>
               ${p ? `<span class="bk-room-price-total">${INR(p.total)} total incl. taxes</span>` : ''}
             </div>
-            <button class="bk-btn-select" data-room-id="${room.id}" type="button"
-                    aria-label="Select ${room.name}">
-              Select Room
-            </button>
+            <div class="bk-room-qty-wrap" data-room-id="${room.id}">
+              <button class="bk-qty-btn bk-qty-minus" type="button" data-room-id="${room.id}" ${currentQty <= 0 ? 'disabled' : ''}
+                      aria-label="Remove one ${room.name}">−</button>
+              <output class="bk-qty-val" id="qty-${room.id}" aria-live="polite">${currentQty}</output>
+              <button class="bk-qty-btn bk-qty-plus" type="button" data-room-id="${room.id}" ${currentQty >= maxQty ? 'disabled' : ''}
+                      aria-label="Add one ${room.name}">+</button>
+            </div>
           </div>
         </div>
       </article>
     `;
   }).join('');
 
-  // Bind select buttons
-  list.querySelectorAll('.bk-btn-select').forEach(btn => {
+  // Add "Continue" button area below rooms
+  const continueArea = document.createElement('div');
+  continueArea.className = 'bk-rooms-continue';
+  continueArea.id = 'rooms-continue';
+  continueArea.innerHTML = `
+    <button class="bk-btn-primary bk-btn-continue" id="step2-continue" type="button" disabled>
+      Continue with Selected Rooms
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+  `;
+  list.after(continueArea);
+
+  // Bind quantity buttons
+  list.querySelectorAll('.bk-qty-minus').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
-      const roomId = btn.dataset.roomId;
-      selectRoom(rooms, roomId);
+      changeRoomQty(rooms, btn.dataset.roomId, -1);
     });
   });
 
-  // Keyboard support for cards
-  list.querySelectorAll('.bk-room-card').forEach(card => {
-    card.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        const roomId = card.dataset.roomId;
-        selectRoom(rooms, roomId);
+  list.querySelectorAll('.bk-qty-plus').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      changeRoomQty(rooms, btn.dataset.roomId, 1);
+    });
+  });
+
+  // Continue button
+  const continueBtn = $('step2-continue');
+  if (continueBtn) {
+    continueBtn.addEventListener('click', () => {
+      if (getTotalRoomCount() > 0) {
+        // Set legacy selectedRoom for backward compat
+        const first = getSelectedRoomsList()[0];
+        if (first) state.selectedRoom = first.room;
+        goToStep(3);
       }
     });
-  });
+  }
+
+  updateContinueBtn();
 }
 
-function selectRoom(rooms, roomId) {
+function changeRoomQty(rooms, roomId, delta) {
   const room = rooms.find(r => r.id === roomId);
   if (!room) return;
 
-  state.selectedRoom = room;
+  const maxQty = room.availability?.remainingRooms || 0;
+  const current = state.selectedRooms[roomId]?.quantity || 0;
+  const newQty = Math.max(0, Math.min(maxQty, current + delta));
 
-  // Highlight selected card
-  document.querySelectorAll('.bk-room-card').forEach(c => {
-    c.classList.toggle('is-selected', c.dataset.roomId === roomId);
-  });
+  if (newQty === 0) {
+    delete state.selectedRooms[roomId];
+  } else {
+    state.selectedRooms[roomId] = { room, quantity: newQty };
+  }
+
+  // Update the quantity display
+  const qtyEl = $(`qty-${roomId}`);
+  if (qtyEl) qtyEl.textContent = newQty;
+
+  // Update button states
+  const wrap = document.querySelector(`.bk-room-qty-wrap[data-room-id="${roomId}"]`);
+  if (wrap) {
+    const minusBtn = wrap.querySelector('.bk-qty-minus');
+    const plusBtn  = wrap.querySelector('.bk-qty-plus');
+    if (minusBtn) minusBtn.disabled = newQty <= 0;
+    if (plusBtn)  plusBtn.disabled  = newQty >= maxQty;
+  }
+
+  // Update card highlight
+  const card = document.querySelector(`.bk-room-card[data-room-id="${roomId}"]`);
+  if (card) card.classList.toggle('is-selected', newQty > 0);
+
+  // Set legacy selectedRoom
+  const first = getSelectedRoomsList()[0];
+  state.selectedRoom = first ? first.room : null;
 
   updateSummary();
+  updateContinueBtn();
+}
 
-  // Brief highlight then advance
-  setTimeout(() => goToStep(3), 300);
+function updateContinueBtn() {
+  const btn = $('step2-continue');
+  if (!btn) return;
+  const total = getTotalRoomCount();
+  btn.disabled = total === 0;
+  if (total === 0) {
+    btn.innerHTML = 'Continue with Selected Rooms <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+  } else {
+    const roomWord = total === 1 ? '1 Room' : `${total} Rooms`;
+    const combined = getCombinedPricing();
+    const priceStr = combined ? ` · ${INR(combined.total)}` : '';
+    btn.innerHTML = `Continue with ${roomWord}${priceStr} <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+  }
 }
 
 function initStep2() {
   const backBtn = $('step2-back');
   if (backBtn) backBtn.addEventListener('click', () => {
     // Clear room selection when going back — forces fresh search on next forward
-    state.selectedRoom = null;
-    state.availabilityData = null;
+    invalidateAvailability();
     goToStep(1);
   });
 
   const emptyBack = $('rooms-empty-back');
   if (emptyBack) emptyBack.addEventListener('click', () => {
-    state.selectedRoom = null;
-    state.availabilityData = null;
+    invalidateAvailability();
     goToStep(1);
   });
 }
@@ -604,35 +781,49 @@ function handleStep3Submit() {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   STEP 4: CONFIRM
+   STEP 4: CONFIRM (Multi-Room)
 ───────────────────────────────────────────────────────────────────────────── */
 function renderConfirmSummary() {
   const container = $('confirm-summary');
   if (!container) return;
 
-  const r  = state.selectedRoom;
-  const p  = r?.pricing;
+  const items = getSelectedRoomsList();
+  const combined = getCombinedPricing();
   const taxLabel = (state.availabilityData?.taxRate)
     ? `GST (${Math.round(state.availabilityData.taxRate * 100)}%)`
     : 'GST (12%)';
 
-  container.innerHTML = `
-    <div class="bk-confirm-section">
-      <div class="bk-confirm-label">Room</div>
+  // Room section
+  let roomHtml = '<div class="bk-confirm-section"><div class="bk-confirm-label">Rooms</div>';
+  for (const { room, quantity } of items) {
+    roomHtml += `
       <div class="bk-confirm-row">
         <span class="bk-confirm-key">Room Type</span>
-        <span class="bk-confirm-val">${r?.name || '—'}</span>
-      </div>
-      ${r?.bedConfiguration ? `<div class="bk-confirm-row">
+        <span class="bk-confirm-val">${room.name}${quantity > 1 ? ' × ' + quantity : ''}</span>
+      </div>`;
+    if (room.bedConfiguration) {
+      roomHtml += `
+      <div class="bk-confirm-row">
         <span class="bk-confirm-key">Bed</span>
-        <span class="bk-confirm-val">${r.bedConfiguration}</span>
-      </div>` : ''}
-      ${r?.view ? `<div class="bk-confirm-row">
+        <span class="bk-confirm-val">${room.bedConfiguration}</span>
+      </div>`;
+    }
+    if (room.view) {
+      roomHtml += `
+      <div class="bk-confirm-row">
         <span class="bk-confirm-key">View</span>
-        <span class="bk-confirm-val">${r.view}</span>
-      </div>` : ''}
-    </div>
+        <span class="bk-confirm-val">${room.view}</span>
+      </div>`;
+    }
+    // Add separator between room types
+    if (items.length > 1) {
+      roomHtml += '<div class="bk-confirm-room-sep"></div>';
+    }
+  }
+  roomHtml += '</div>';
 
+  // Stay section
+  const stayHtml = `
     <div class="bk-confirm-section">
       <div class="bk-confirm-label">Stay</div>
       <div class="bk-confirm-row">
@@ -651,8 +842,10 @@ function renderConfirmSummary() {
         <span class="bk-confirm-key">Guests</span>
         <span class="bk-confirm-val">${guestLabel(state.adults, state.children)}</span>
       </div>
-    </div>
+    </div>`;
 
+  // Guest section
+  const guestHtml = `
     <div class="bk-confirm-section">
       <div class="bk-confirm-label">Guest</div>
       <div class="bk-confirm-row">
@@ -671,25 +864,42 @@ function renderConfirmSummary() {
         <span class="bk-confirm-key">Requests</span>
         <span class="bk-confirm-val">${escHtml(state.specialRequests)}</span>
       </div>` : ''}
-    </div>
+    </div>`;
 
-    ${p ? `
-    <div class="bk-confirm-section bk-confirm-pricing">
-      <div class="bk-confirm-label">Pricing</div>
-      <div class="bk-confirm-price-row">
-        <span>${INR(p.basePrice)} × ${nightLabel(p.nights)}</span>
-        <span>${INR(p.subtotal)}</span>
-      </div>
+  // Pricing section
+  let pricingHtml = '';
+  if (combined) {
+    pricingHtml = '<div class="bk-confirm-section bk-confirm-pricing"><div class="bk-confirm-label">Pricing</div>';
+    for (const li of combined.lineItems) {
+      const label = li.quantity > 1
+        ? `${li.roomTypeName} × ${li.quantity}`
+        : li.roomTypeName;
+      const detail = li.quantity > 1
+        ? `${INR(li.basePrice)} × ${nightLabel(li.nights)} × ${li.quantity}`
+        : `${INR(li.basePrice)} × ${nightLabel(li.nights)}`;
+      pricingHtml += `
+        <div class="bk-confirm-price-row">
+          <span>${label}</span>
+          <span>${INR(li.lineSubtotal)}</span>
+        </div>
+        <div class="bk-confirm-price-row is-detail">
+          <span>${detail}</span>
+          <span></span>
+        </div>`;
+    }
+    pricingHtml += `
       <div class="bk-confirm-price-row is-tax">
         <span>${taxLabel}</span>
-        <span>${INR(p.taxes)}</span>
+        <span>${INR(combined.taxes)}</span>
       </div>
       <div class="bk-confirm-price-row is-total">
         <span>Total</span>
-        <span>${INR(p.total)}</span>
+        <span>${INR(combined.total)}</span>
       </div>
-    </div>` : ''}
-  `;
+    </div>`;
+  }
+
+  container.innerHTML = roomHtml + stayHtml + guestHtml + pricingHtml;
 }
 
 function escHtml(str) {
@@ -711,7 +921,8 @@ function initStep4() {
 async function submitReservation() {
   clearError('step4-error');
 
-  if (!state.selectedRoom || !state.checkIn || !state.checkOut || !state.guestName) {
+  const totalRooms = getTotalRoomCount();
+  if (totalRooms === 0 || !state.checkIn || !state.checkOut || !state.guestName) {
     showError('step4-error', 'Something went wrong. Please go back and check your details.');
     return;
   }
@@ -726,8 +937,11 @@ async function submitReservation() {
   if (confirmBtn) confirmBtn.disabled = true;
 
   try {
+    // Build the request body
+    const items = getSelectedRoomsList();
+    const isMultiRoom = items.length > 1 || items[0].quantity > 1;
+
     const body = {
-      roomTypeId:      state.selectedRoom.id,
       checkIn:         state.checkIn,
       checkOut:        state.checkOut,
       adults:          state.adults,
@@ -737,6 +951,14 @@ async function submitReservation() {
       guestPhone:      state.guestPhone,
       specialRequests: state.specialRequests
     };
+
+    if (isMultiRoom) {
+      // Multi-room payload
+      body.rooms = items.map(s => ({ roomTypeId: s.room.id, quantity: s.quantity }));
+    } else {
+      // Single-room payload (backward compatible)
+      body.roomTypeId = items[0].room.id;
+    }
 
     if (overlayMsg) overlayMsg.textContent = 'Generating payment order…';
 
@@ -768,12 +990,13 @@ async function submitReservation() {
     if (overlay) overlay.classList.remove('is-active');
 
     // 3. Open Razorpay Widget
+    const roomDesc = items.map(s => s.room.name + (s.quantity > 1 ? ' ×' + s.quantity : '')).join(', ');
     const options = {
       key: orderData.key_id,
       amount: orderData.amount,
       currency: orderData.currency,
       name: 'Silverline Resort Ooty',
-      description: 'Room Reservation',
+      description: roomDesc || 'Room Reservation',
       order_id: orderData.order_id,
       prefill: {
         name: state.guestName,
@@ -811,11 +1034,23 @@ async function submitReservation() {
           if (overlayMsg) overlayMsg.textContent = 'Reservation confirmed!';
 
           // Store in sessionStorage for the confirmation page
-          sessionStorage.setItem('slr_booking', JSON.stringify({
+          const bookingData = {
             ...data.reservation,
-            roomImage: state.selectedRoom.image,
-            roomImageAlt: state.selectedRoom.imageAlt
-          }));
+            // Attach room images for confirmation page
+            roomImages: items.map(s => ({
+              roomTypeId: s.room.id,
+              roomTypeName: s.room.name,
+              image: s.room.image,
+              imageAlt: s.room.imageAlt,
+              quantity: s.quantity
+            }))
+          };
+          // Legacy field
+          if (!isMultiRoom) {
+            bookingData.roomImage = items[0].room.image;
+            bookingData.roomImageAlt = items[0].room.imageAlt;
+          }
+          sessionStorage.setItem('slr_booking', JSON.stringify(bookingData));
 
           // Redirect to confirmation
           setTimeout(() => {
@@ -911,8 +1146,8 @@ function applyUrlParams() {
         if (state._preSelectRoomId && state.availabilityData?.rooms) {
           const room = state.availabilityData.rooms.find(r => r.id === state._preSelectRoomId);
           if (room) {
-            const btn = document.querySelector(`.bk-btn-select[data-room-id="${state._preSelectRoomId}"]`);
-            if (btn) btn.click();
+            // Auto-add one of the pre-selected room type
+            changeRoomQty(state.availabilityData.rooms, state._preSelectRoomId, 1);
           }
         }
       });

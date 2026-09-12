@@ -2,6 +2,8 @@
  * SILVERLINE RESORT — Transactional Email Service
  * Uses Resend to send emails.
  * Fails gracefully so reservation flow is never interrupted.
+ *
+ * Supports both single-room and multi-room booking confirmations.
  */
 
 'use strict';
@@ -13,11 +15,121 @@ const EMAIL_FROM = process.env.EMAIL_FROM || 'reservations@silverlineresort.in';
 const EMAIL_ADMIN = process.env.EMAIL_ADMIN || 'admin@silverlineresort.in';
 const HOTEL_PHONE = process.env.HOTEL_PHONE || '+91 86384 79919';
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 let resend;
 if (process.env.RESEND_API_KEY) {
   resend = new Resend(process.env.RESEND_API_KEY);
 } else {
   console.warn('[EMAIL] RESEND_API_KEY is missing. Emails will be logged but not sent.');
+}
+
+/**
+ * Build the room details section for multi-room or single-room bookings.
+ * Returns { roomHtml, roomText } for use in both HTML and plain-text emails.
+ */
+function buildRoomSection(reservation, palette) {
+  const { teak, ivory } = palette;
+  const isMulti = reservation.isMultiRoom && Array.isArray(reservation.lineItems) && reservation.lineItems.length > 0;
+
+  if (isMulti) {
+    // Multi-room: list each room type with quantity
+    let html = '';
+    let text = '';
+    for (const li of reservation.lineItems) {
+      const label = li.quantity > 1
+        ? `${escapeHtml(li.roomTypeName)} × ${li.quantity}`
+        : escapeHtml(li.roomTypeName);
+      html += `<p style="margin:0 0 4px;font-family:Georgia,'Times New Roman',serif;font-size:18px;color:${ivory};font-weight:400;">${label}</p>`;
+      text += `  ${li.roomTypeName}${li.quantity > 1 ? ' × ' + li.quantity : ''}\n`;
+    }
+    return { roomHtml: html, roomText: text.trimEnd() };
+  }
+
+  // Single room
+  const name = escapeHtml(reservation.roomTypeName || '—');
+  return {
+    roomHtml: `<p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:20px;color:${ivory};font-weight:400;">${name}</p>`,
+    roomText: `  ${reservation.roomTypeName || '—'}`
+  };
+}
+
+/**
+ * Build the pricing section for multi-room or single-room bookings.
+ * Returns { pricingHtml, pricingText }.
+ */
+function buildPricingSection(reservation, palette) {
+  const { stone, ivory, divider } = palette;
+  const currencySymbol = (reservation.currency === 'INR') ? '₹' : (reservation.currency || '₹');
+  const fmt = n => `${currencySymbol}${Number(n).toLocaleString('en-IN')}`;
+  const isMulti = reservation.isMultiRoom && Array.isArray(reservation.lineItems) && reservation.lineItems.length > 0;
+  const taxLabel = reservation.taxLabel || 'GST';
+
+  let html = '';
+  let text = 'Payment Details:\n';
+
+  if (isMulti) {
+    // Multi-room line items
+    for (const li of reservation.lineItems) {
+      const label = li.quantity > 1
+        ? `${escapeHtml(li.roomTypeName)} × ${li.quantity}`
+        : escapeHtml(li.roomTypeName);
+      const detail = li.quantity > 1
+        ? `${fmt(li.basePrice)} × ${reservation.nights} night${reservation.nights !== 1 ? 's' : ''} × ${li.quantity}`
+        : `${fmt(li.basePrice)} × ${reservation.nights} night${reservation.nights !== 1 ? 's' : ''}`;
+      html += `
+        <tr>
+          <td style="padding:6px 0;font-size:14px;color:${stone};border-bottom:1px solid ${divider};">${label}</td>
+          <td style="padding:6px 0;font-size:14px;color:${ivory};text-align:right;border-bottom:1px solid ${divider};font-weight:500;">${fmt(li.lineSubtotal)}</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding:2px 0 6px;font-size:12px;color:${stone};border-bottom:1px solid ${divider};">${detail}</td>
+        </tr>`;
+      text += `${li.roomTypeName}${li.quantity > 1 ? ' × ' + li.quantity : ''}: ${fmt(li.lineSubtotal)} (${detail})\n`;
+    }
+  }
+
+  // Subtotal (only show for multi-room since single-room subtotal = room line)
+  if (isMulti && reservation.subtotal !== undefined) {
+    html += `
+      <tr>
+        <td style="padding:6px 0;font-size:14px;color:${stone};border-bottom:1px solid ${divider};">Subtotal</td>
+        <td style="padding:6px 0;font-size:14px;color:${ivory};text-align:right;border-bottom:1px solid ${divider};font-weight:500;">${fmt(reservation.subtotal)}</td>
+      </tr>`;
+  }
+
+  // Total, tax, payment mode, transaction ID
+  const totalFormatted = fmt(reservation.total);
+  html += `
+    <tr>
+      <td style="padding:6px 0;font-size:14px;color:${stone};border-bottom:1px solid ${divider};">Total Charged</td>
+      <td style="padding:6px 0;font-size:14px;color:${ivory};text-align:right;border-bottom:1px solid ${divider};font-weight:500;">${totalFormatted}</td>
+    </tr>
+    <tr>
+      <td style="padding:6px 0;font-size:13px;color:${stone};border-bottom:1px solid ${divider};">Includes</td>
+      <td style="padding:6px 0;font-size:13px;color:${stone};text-align:right;border-bottom:1px solid ${divider};">${taxLabel}</td>
+    </tr>
+    <tr>
+      <td style="padding:6px 0;font-size:13px;color:${stone};border-bottom:1px solid ${divider};">Payment Mode</td>
+      <td style="padding:6px 0;font-size:13px;color:${ivory};text-align:right;border-bottom:1px solid ${divider};">${escapeHtml(reservation.paymentMode || 'Prepaid')}</td>
+    </tr>
+    <tr>
+      <td style="padding:6px 0;font-size:13px;color:${stone};">Transaction ID</td>
+      <td style="padding:6px 0;font-size:13px;color:${ivory};text-align:right;word-break:break-all;">${escapeHtml(reservation.paymentReference || 'N/A')}</td>
+    </tr>`;
+
+  text += `Total: ${totalFormatted} (incl. ${taxLabel})\n`;
+  text += `Payment Mode: ${reservation.paymentMode || 'Prepaid'}\n`;
+  text += `Transaction ID: ${reservation.paymentReference || 'N/A'}`;
+
+  return { pricingHtml: html, pricingText: text };
 }
 
 /**
@@ -27,13 +139,10 @@ if (process.env.RESEND_API_KEY) {
  */
 function buildConfirmationHtml(reservation) {
   const {
-    bookingReference, guestName, roomTypeName,
-    checkIn, checkOut, nights, adults, children,
-    total, currency, paymentMode, paymentReference
+    bookingReference, guestName,
+    checkIn, checkOut, nights, adults, children
   } = reservation;
 
-  const currencySymbol = currency === 'INR' ? '₹' : currency;
-  const totalFormatted = `${currencySymbol}${Number(total).toLocaleString('en-IN')}`;
   const guestSummary = `${adults} adult${adults !== 1 ? 's' : ''}${children > 0 ? `, ${children} child${children !== 1 ? 'ren' : ''}` : ''}`;
   const nightSummary = `${nights} night${nights !== 1 ? 's' : ''}`;
 
@@ -45,6 +154,10 @@ function buildConfirmationHtml(reservation) {
   const teak = '#c0a077';
   const green = '#7ecba1';
   const divider = '#1f2527';
+
+  const palette = { bg, cardBg, ivory, stone, teak, green, divider };
+  const { roomHtml } = buildRoomSection(reservation, palette);
+  const { pricingHtml } = buildPricingSection(reservation, palette);
 
   return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
@@ -106,7 +219,7 @@ function buildConfirmationHtml(reservation) {
               Reservation Confirmed
             </h1>
             <p style="margin:0;font-size:14px;color:${stone};line-height:1.5;">
-              Thank you, ${guestName} — we look forward to welcoming you.
+              Thank you, ${escapeHtml(guestName)} — we look forward to welcoming you.
             </p>
           </td>
         </tr>
@@ -119,7 +232,7 @@ function buildConfirmationHtml(reservation) {
                 <td style="padding:12px 24px;text-align:center;">
                   <p style="margin:0 0 4px;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:${stone};font-weight:500;">BOOKING REFERENCE</p>
                   <p style="margin:0;font-family:'Courier New',Courier,monospace;font-size:18px;color:${green};letter-spacing:0.12em;font-weight:600;">
-                    ${bookingReference}
+                    ${escapeHtml(bookingReference)}
                   </p>
                 </td>
               </tr>
@@ -133,10 +246,8 @@ function buildConfirmationHtml(reservation) {
         <!-- Room -->
         <tr>
           <td style="padding:24px 40px 8px;" class="inner-pad">
-            <p style="margin:0 0 4px;font-size:10px;letter-spacing:0.35em;text-transform:uppercase;color:${teak};font-weight:500;">YOUR ROOM</p>
-            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:20px;color:${ivory};font-weight:400;">
-              ${roomTypeName}
-            </p>
+            <p style="margin:0 0 4px;font-size:10px;letter-spacing:0.35em;text-transform:uppercase;color:${teak};font-weight:500;">YOUR ROOM${reservation.isMultiRoom ? 'S' : ''}</p>
+            ${roomHtml}
           </td>
         </tr>
 
@@ -147,12 +258,12 @@ function buildConfirmationHtml(reservation) {
               <tr>
                 <td class="detail-cell" width="33%" style="vertical-align:top;padding-right:12px;">
                   <p style="margin:0 0 4px;font-size:10px;letter-spacing:0.28em;text-transform:uppercase;color:${stone};font-weight:500;">CHECK-IN</p>
-                  <p style="margin:0;font-size:14px;color:${ivory};line-height:1.4;">${checkIn}</p>
+                  <p style="margin:0;font-size:14px;color:${ivory};line-height:1.4;">${escapeHtml(checkIn)}</p>
                   <p style="margin:2px 0 0;font-size:12px;color:${stone};">from 14:00</p>
                 </td>
                 <td class="detail-cell" width="33%" style="vertical-align:top;padding-right:12px;">
                   <p style="margin:0 0 4px;font-size:10px;letter-spacing:0.28em;text-transform:uppercase;color:${stone};font-weight:500;">CHECK-OUT</p>
-                  <p style="margin:0;font-size:14px;color:${ivory};line-height:1.4;">${checkOut}</p>
+                  <p style="margin:0;font-size:14px;color:${ivory};line-height:1.4;">${escapeHtml(checkOut)}</p>
                   <p style="margin:2px 0 0;font-size:12px;color:${stone};">by 11:00</p>
                 </td>
                 <td class="detail-cell" width="34%" style="vertical-align:top;">
@@ -173,22 +284,7 @@ function buildConfirmationHtml(reservation) {
           <td style="padding:24px 40px;" class="inner-pad">
             <p style="margin:0 0 14px;font-size:10px;letter-spacing:0.35em;text-transform:uppercase;color:${teak};font-weight:500;">PAYMENT DETAILS</p>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-              <tr>
-                <td style="padding:6px 0;font-size:14px;color:${stone};border-bottom:1px solid ${divider};">Total Charged</td>
-                <td style="padding:6px 0;font-size:14px;color:${ivory};text-align:right;border-bottom:1px solid ${divider};font-weight:500;">${totalFormatted}</td>
-              </tr>
-              <tr>
-                <td style="padding:6px 0;font-size:13px;color:${stone};border-bottom:1px solid ${divider};">Includes</td>
-                <td style="padding:6px 0;font-size:13px;color:${stone};text-align:right;border-bottom:1px solid ${divider};">GST</td>
-              </tr>
-              <tr>
-                <td style="padding:6px 0;font-size:13px;color:${stone};border-bottom:1px solid ${divider};">Payment Mode</td>
-                <td style="padding:6px 0;font-size:13px;color:${ivory};text-align:right;border-bottom:1px solid ${divider};">${paymentMode || 'Prepaid'}</td>
-              </tr>
-              <tr>
-                <td style="padding:6px 0;font-size:13px;color:${stone};">Transaction ID</td>
-                <td style="padding:6px 0;font-size:13px;color:${ivory};text-align:right;word-break:break-all;">${paymentReference || 'N/A'}</td>
-              </tr>
+              ${pricingHtml}
             </table>
           </td>
         </tr>
@@ -241,11 +337,27 @@ function buildConfirmationHtml(reservation) {
 async function sendBookingConfirmation(reservation) {
   const {
     bookingReference, guestName, guestEmail,
-    roomTypeName, checkIn, checkOut, nights,
+    checkIn, checkOut, nights,
     adults, children, total, currency, paymentMode, paymentReference
   } = reservation;
 
   const subject = `Your ${HOTEL_NAME} booking is confirmed — ${bookingReference}`;
+
+  // Build room name for plain text
+  const isMulti = reservation.isMultiRoom && Array.isArray(reservation.lineItems);
+  const roomLine = isMulti
+    ? reservation.lineItems.map(li => `${li.roomTypeName}${li.quantity > 1 ? ' × ' + li.quantity : ''}`).join(', ')
+    : (reservation.roomTypeName || '—');
+
+  let pricingText = '';
+  if (isMulti) {
+    const currSym = currency === 'INR' ? '₹' : currency;
+    for (const li of reservation.lineItems) {
+      pricingText += `  ${li.roomTypeName}${li.quantity > 1 ? ' × ' + li.quantity : ''}: ${currSym}${li.lineSubtotal.toLocaleString('en-IN')}\n`;
+    }
+    pricingText += `Subtotal: ${currSym}${reservation.subtotal.toLocaleString('en-IN')}\n`;
+    pricingText += `Taxes (${reservation.taxLabel || 'GST'}): ${currSym}${reservation.taxes.toLocaleString('en-IN')}\n`;
+  }
 
   const text = `
 Dear ${guestName},
@@ -253,14 +365,14 @@ Dear ${guestName},
 Your reservation at ${HOTEL_NAME} is confirmed.
 
 Booking Reference: ${bookingReference}
-Room: ${roomTypeName}
+Room${isMulti ? 's' : ''}: ${roomLine}
 Check-in:  ${checkIn} (from 14:00)
 Check-out: ${checkOut} (by 11:00)
 Guests: ${adults} adult(s)${children > 0 ? `, ${children} child(ren)` : ''}
 Duration: ${nights} night(s)
 
 Payment Details:
-Total: ${currency === 'INR' ? '₹' : currency}${total.toLocaleString('en-IN')} (incl. GST)
+${pricingText}Total: ${currency === 'INR' ? '₹' : currency}${total.toLocaleString('en-IN')} (incl. GST)
 Payment Mode: ${paymentMode || 'Prepaid'}
 Transaction ID: ${paymentReference || 'N/A'}
 

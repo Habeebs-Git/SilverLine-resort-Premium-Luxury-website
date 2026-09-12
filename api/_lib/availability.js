@@ -94,7 +94,7 @@ async function getAvailableRooms(checkIn, checkOut, adults = 1, children = 0) {
   );
 
   return results
-    .filter(rt => rt.availability.available && rt.fitsGuests)
+    .filter(rt => rt.availability.available)
     .sort((a, b) => a.basePrice - b.basePrice);
 }
 
@@ -145,6 +145,40 @@ function calculatePricing(basePrice, nights, taxRate = 0.12) {
   const taxes    = Math.round(subtotal * taxRate);
   const total    = subtotal + taxes;
   return { basePrice, nights, subtotal, taxes, total, taxRate };
+}
+
+/**
+ * Calculate combined pricing for a multi-room reservation.
+ * Uses per-room calculatePricing to ensure individual reservation rows
+ * sum exactly to the combined total (avoids rounding mismatches).
+ *
+ * @param {Array}  roomItems  [{ roomTypeId, roomTypeName, basePrice, quantity }]
+ * @param {number} nights
+ * @param {number} taxRate
+ * @returns {{ lineItems, subtotal, taxes, total, taxRate, nights }}
+ */
+function calculateMultiRoomPricing(roomItems, nights, taxRate = 0.12) {
+  let subtotal = 0;
+  let taxes    = 0;
+  const lineItems = roomItems.map(item => {
+    const perRoom = calculatePricing(item.basePrice, nights, taxRate);
+    const lineSubtotal = perRoom.subtotal * item.quantity;
+    const lineTaxes    = perRoom.taxes    * item.quantity;
+    subtotal += lineSubtotal;
+    taxes    += lineTaxes;
+    return {
+      roomTypeId:   item.roomTypeId,
+      roomTypeName: item.roomTypeName,
+      basePrice:    item.basePrice,
+      quantity:     item.quantity,
+      nights,
+      lineSubtotal,
+      lineTaxes,
+      lineTotal:    lineSubtotal + lineTaxes
+    };
+  });
+  const total = subtotal + taxes;
+  return { lineItems, subtotal, taxes, total, taxRate, nights };
 }
 
 /**
@@ -199,5 +233,5 @@ async function getOccupancyStats() {
 module.exports = {
   countOverlappingBookings, checkRoomTypeAvailability,
   getAvailableRooms, validateFinalAvailability,
-  calculatePricing, getOccupancyStats
+  calculatePricing, calculateMultiRoomPricing, getOccupancyStats
 };

@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    SILVERLINE RESORT — Booking Engine Styles  v2
    Extends /css/theme.css design tokens.
    Covers every class used in booking.html + booking-engine.js.
@@ -150,6 +150,13 @@
 @media (max-width: 600px) {
   .bk-step-label { display: none; }
   .bk-progress   { max-width: 180px; }
+}
+
+@media (max-width: 380px) {
+  .bk-header-inner { padding: 0 1rem; }
+  .bk-logo-text { display: none; }
+  .bk-progress { max-width: 140px; }
+  .bk-help-link { font-size: 0; gap: 0; }
 }
 
 /* ─── Main Layout ─────────────────────────────────────────────────────── */
@@ -993,7 +1000,7 @@
 }
 
 @media (max-width: 1023px) {
-  .bk-summary { position: relative; top: 0; }
+  .bk-summary { display: none; }
 }
 
 .bk-summary-inner { padding: 1.4rem 1.35rem; }
@@ -1016,6 +1023,8 @@
   flex-direction: column;
   gap: 0.65rem;
 }
+
+.bk-summary-content[hidden] { display: none; }
 
 .bk-summary-room {
   padding-bottom: 0.9rem;
@@ -1422,3 +1431,297 @@
 
 /* bk-confirm-pricing is the pricing section wrapper in the review step */
 .bk-confirm-pricing { margin-top: 0; }
+
+/* ─── Mobile Review / Confirm Overflow Fix ────────────────────────────── */
+/*
+ * Prevents horizontal overflow on 320–430px screens by adding word-break
+ * and overflow-wrap to dynamic-content elements (emails, booking refs,
+ * room names, pricing rows). Preserves the existing premium layout.
+ */
+
+.bk-confirm-val {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.bk-confirm-key {
+  flex-shrink: 0;
+}
+
+.bk-confirm-row {
+  min-width: 0;
+}
+
+.bk-confirm-price-row > span {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.bk-confirm-section {
+  overflow: hidden;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* Confirmation page values */
+.conf-detail-value {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.conf-ref {
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+@media (max-width: 480px) {
+  .bk-panel-inner {
+    padding: 1.4rem 1rem 1.6rem;
+  }
+
+  .bk-confirm-section {
+    padding: 0.8rem 0.85rem;
+  }
+
+  .bk-confirm-row {
+    gap: 0.5rem;
+  }
+
+  .bk-confirm-price-row {
+    gap: 0.5rem;
+  }
+
+  .bk-confirm-price-row.is-total {
+    font-size: 1.1rem;
+  }
+
+  .bk-confirm-val {
+    font-size: 0.78rem;
+  }
+
+  .bk-actions {
+    gap: 0.5rem;
+  }
+
+  .bk-btn-primary,
+  .bk-btn-confirm {
+    padding: 0.85rem 1.4rem;
+    font-size: 0.58rem;
+  }
+
+  .bk-btn-ghost {
+    padding: 0.8rem 1.2rem;
+    font-size: 0.58rem;
+  }
+
+  /* Payment mock notice */
+  .bk-payment-mock-notice {
+    padding: 0.75rem 0.8rem;
+    gap: 0.55rem;
+  }
+
+  /* Confirmation page */
+  .conf-header {
+    padding: 1.5rem 1rem 1.2rem;
+  }
+
+  .conf-body {
+    padding: 1.2rem 1rem;
+  }
+
+  .conf-total-value {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .bk-panel-inner {
+    padding: 1.2rem 0.75rem 1.4rem;
+  }
+
+  .bk-confirm-section {
+    padding: 0.7rem 0.65rem;
+  }
+
+  .bk-confirm-key {
+    font-size: 0.7rem;
+  }
+
+  .bk-confirm-val {
+    font-size: 0.73rem;
+  }
+
+  .bk-confirm-price-row.is-total {
+    font-size: 1rem;
+  }
+
+  .bk-panel-title {
+    font-size: 1.3rem;
+  }
+
+  .bk-btn-primary,
+  .bk-btn-confirm {
+    padding: 0.8rem 1.1rem;
+    font-size: 0.55rem;
+    letter-spacing: 0.16em;
+  }
+
+  .bk-btn-ghost {
+    padding: 0.75rem 1rem;
+    font-size: 0.55rem;
+    letter-spacing: 0.14em;
+  }
+}
+
+/* ─── Multi-Room: Quantity Controls ───────────────────────────────────── */
+
+.bk-room-qty-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid rgba(192, 160, 119, 0.32);
+  border-radius: 999px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.bk-qty-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(154, 122, 82, 0.08);
+  color: var(--teak-light);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  touch-action: manipulation;
+  font-family: var(--font-body);
+  line-height: 1;
+  padding: 0;
+}
+
+.bk-qty-btn:hover:not(:disabled) {
+  background: rgba(154, 122, 82, 0.2);
+}
+
+.bk-qty-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.bk-qty-val {
+  width: 30px;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--ivory);
+  font-family: var(--font-body);
+  user-select: none;
+}
+
+/* Room capacity hint */
+.bk-room-capacity {
+  font-size: 0.62rem;
+  color: rgba(236, 234, 227, 0.38);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.04em;
+}
+
+/* Continue button area below room list */
+.bk-rooms-continue {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 0 0.5rem;
+}
+
+.bk-btn-continue {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+  word-break: break-word;
+}
+
+/* Confirm page: price detail sub-row */
+.bk-confirm-price-row.is-detail,
+.bk-summary-price-row.is-detail {
+  font-size: 0.68rem;
+  color: rgba(236, 234, 227, 0.35);
+  padding: 0 0 0.3rem;
+}
+
+/* Confirm page: separator between room types */
+.bk-confirm-room-sep {
+  height: 1px;
+  background: rgba(215, 220, 216, 0.06);
+  margin: 0.35rem 0;
+}
+
+/* Confirmation page: multi-room lines */
+.conf-room-line {
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+.conf-pricing-row.is-detail {
+  font-size: 0.72rem;
+}
+
+.conf-pricing-row.is-detail .label {
+  color: rgba(236, 234, 227, 0.35);
+}
+
+/* ─── Mobile quantity control sizing ──────────────────────────────────── */
+@media (max-width: 480px) {
+  .bk-room-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .bk-room-qty-wrap {
+    align-self: flex-start;
+  }
+
+  .bk-qty-btn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .bk-qty-val {
+    width: 34px;
+    font-size: 0.9rem;
+  }
+
+  .bk-btn-continue {
+    font-size: 0.55rem;
+    padding: 0.85rem 1.2rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .bk-qty-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 1rem;
+  }
+
+  .bk-qty-val {
+    width: 28px;
+    font-size: 0.8rem;
+  }
+
+  .bk-room-price-amount {
+    font-size: 1.1rem;
+  }
+
+  .bk-room-name {
+    font-size: 1rem;
+  }
+}

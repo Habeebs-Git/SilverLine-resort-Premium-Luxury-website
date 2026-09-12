@@ -4,6 +4,8 @@
  * Reads booking data from sessionStorage (written by booking-engine.js
  * after a successful API call) and renders the confirmation UI.
  *
+ * Supports both single-room and multi-room bookings.
+ *
  * If no session data is present, shows the error state.
  */
 
@@ -38,16 +40,27 @@ function renderConfirmation(booking) {
   const refVal = document.getElementById('conf-ref-value');
   if (refVal) refVal.textContent = booking.bookingReference || '—';
 
-  // Room image
+  // Room image — for multi-room, show first room; for single-room, keep legacy
   const img = document.getElementById('conf-room-img');
-  if (img && booking.roomImage) {
-    img.src = booking.roomImage;
-    img.alt = booking.roomImageAlt || booking.roomTypeName || 'Room';
+  if (img) {
+    const imgSrc = booking.roomImage || (booking.roomImages && booking.roomImages[0]?.image);
+    if (imgSrc) {
+      img.src = imgSrc;
+      img.alt = booking.roomImageAlt || (booking.roomImages && booking.roomImages[0]?.roomTypeName) || booking.roomTypeName || 'Room';
+    }
   }
 
-  // Room name
+  // Room name(s)
   const roomName = document.getElementById('conf-room-name');
-  if (roomName) roomName.textContent = booking.roomTypeName || '—';
+  if (roomName) {
+    if (booking.isMultiRoom && booking.lineItems) {
+      roomName.innerHTML = booking.lineItems.map(li =>
+        `<span class="conf-room-line">${li.roomTypeName}${li.quantity > 1 ? ' × ' + li.quantity : ''}</span>`
+      ).join('');
+    } else {
+      roomName.textContent = booking.roomTypeName || '—';
+    }
+  }
 
   // Detail grid
   const grid = document.getElementById('conf-detail-grid');
@@ -71,16 +84,52 @@ function renderConfirmation(booking) {
     `;
   }
 
-  // Pricing
+  // Pricing — support multi-room line items
   const pricingTable = document.getElementById('conf-pricing-table');
   if (pricingTable && booking.pricing) {
     const p = booking.pricing;
     const taxLabel = p.taxLabel || 'GST (12%)';
-    pricingTable.innerHTML = `
-      <div class="conf-pricing-row">
-        <span class="label">${INR(p.basePrice)} × ${nightLabel(p.nights)}</span>
-        <span class="value">${INR(p.subtotal)}</span>
-      </div>
+
+    let html = '';
+
+    if (booking.isMultiRoom && booking.lineItems) {
+      // Multi-room: show each line item
+      for (const li of booking.lineItems) {
+        const label = li.quantity > 1
+          ? `${li.roomTypeName} × ${li.quantity}`
+          : li.roomTypeName;
+        const detail = li.quantity > 1
+          ? `${INR(li.basePrice)} × ${nightLabel(p.nights)} × ${li.quantity}`
+          : `${INR(li.basePrice)} × ${nightLabel(p.nights)}`;
+        html += `
+          <div class="conf-pricing-row">
+            <span class="label">${label}</span>
+            <span class="value">${INR(li.lineSubtotal)}</span>
+          </div>
+          <div class="conf-pricing-row is-detail">
+            <span class="label">${detail}</span>
+            <span class="value"></span>
+          </div>`;
+      }
+    } else {
+      // Single room: legacy display
+      html += `
+        <div class="conf-pricing-row">
+          <span class="label">${INR(p.basePrice)} × ${nightLabel(p.nights)}</span>
+          <span class="value">${INR(p.subtotal)}</span>
+        </div>`;
+    }
+
+    // Multi-room: show combined subtotal before taxes
+    if (booking.isMultiRoom && booking.lineItems) {
+      html += `
+        <div class="conf-pricing-row">
+          <span class="label">Subtotal</span>
+          <span class="value">${INR(p.subtotal)}</span>
+        </div>`;
+    }
+
+    html += `
       <div class="conf-pricing-row">
         <span class="label">${taxLabel}</span>
         <span class="value">${INR(p.taxes)}</span>
@@ -90,6 +139,7 @@ function renderConfirmation(booking) {
         <span class="value">${INR(p.total)}</span>
       </div>
     `;
+    pricingTable.innerHTML = html;
   }
 
   // Guest info
