@@ -469,7 +469,7 @@ async function loadRooms() {
 
   try {
     const url = `/api/availability?checkIn=${search.checkIn}&checkOut=${search.checkOut}&adults=${search.adults}&children=${search.children}`;
-    const res = await fetch(url, { signal: controller.signal });
+    const res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
     const data = await res.json();
 
     // Ignore a response that no longer belongs to the visible search.

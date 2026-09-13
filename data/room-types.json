@@ -37,7 +37,7 @@
       "Deep-pile mattress",
       "Crisp white linen"
     ],
-    "inventory": 3,
+    "inventory": 1,
     "active": true,
     "sortOrder": 1
   },
@@ -79,7 +79,7 @@
       "Natural morning light",
       "Plush king bed"
     ],
-    "inventory": 3,
+    "inventory": 1,
     "active": true,
     "sortOrder": 2
   },
@@ -122,7 +122,7 @@
       "Warm teak furnishings",
       "Evening forest sounds"
     ],
-    "inventory": 2,
+    "inventory": 1,
     "active": true,
     "sortOrder": 3
   },
@@ -166,7 +166,7 @@
       "Warm amber interiors",
       "Mini fridge"
     ],
-    "inventory": 2,
+    "inventory": 1,
     "active": true,
     "sortOrder": 4
   },
@@ -212,7 +212,7 @@
       "Copper drapes",
       "Bathtub"
     ],
-    "inventory": 2,
+    "inventory": 1,
     "active": true,
     "sortOrder": 5
   },
@@ -255,7 +255,7 @@
       "Generous proportions",
       "Warm teak throughout"
     ],
-    "inventory": 2,
+    "inventory": 1,
     "active": true,
     "sortOrder": 6
   },

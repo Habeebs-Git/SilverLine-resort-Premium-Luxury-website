@@ -20,6 +20,11 @@ function setCorsHeaders(res) {
 
 module.exports = async function handler(req, res) {
   setCorsHeaders(res);
+  // Availability data must NEVER be cached — a room can become unavailable
+  // between two identical searches seconds apart.
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed.' });
